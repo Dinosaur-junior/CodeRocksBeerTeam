@@ -176,8 +176,7 @@ class Database:
     # add user
     def users_add(self, new_user):
         if self.users_get_one(new_user[0]) is None:
-            self.insert("INSERT INTO users(id, balance, subscription, tg_account, referrals, session, "
-                        "filter, account, info)  VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s);", new_user)
+            self.insert("INSERT INTO users(id, info)  VALUES(%s, %s);", new_user)
 
     # edit users info
     def users_update_info(self, user_id, key, value):

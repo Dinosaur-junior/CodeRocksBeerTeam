@@ -52,6 +52,7 @@ def print_error(e):
 def log(text):
     log_time = datetime.now().strftime("%H:%M:%S %d.%m.%Y")
     log_file = open(os.path.join(path, 'log.txt'), 'a', encoding='utf-8')
+    print(f'{log_time} -- {text}')
     print(f'{log_time} -- {text}', file=log_file)
     log_file.close()
 
