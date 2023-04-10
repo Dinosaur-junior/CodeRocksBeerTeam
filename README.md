@@ -6,6 +6,9 @@
 - Дымников Михаил (dino)
 - Дарьин Глеб (master of beer)
 
+### Продукт ###
+- сайт - https://dym-dino.ru
+- бот -  http://t.me/beerCoders_codeRocks_bot
 
 ### Функционал ###
     пока нет нихуя 
