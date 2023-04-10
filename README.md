@@ -12,6 +12,7 @@
 
 ### Задачи ###
     выпить пива
+[общее тз от оранизаторов этой ебатории](https://docs.google.com/document/u/0/d/1v7g85kf-LivMzjGKPWKbszbioKZUST0NuAaLen0SSyM/mobilebasic)
 - телеграм бот
 - админ панель
 
