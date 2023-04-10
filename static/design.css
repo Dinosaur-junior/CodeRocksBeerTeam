@@ -36,3 +36,16 @@ main.container-fluid {margin:0;padding:0;}
         color:#fff;
 }
 
+
+@media (min-width: 576px) {
+.photo {width:40%;}
+}
+@media (min-width: 768px) {
+.photo {width:40%;}
+}
+@media (min-width: 992px) {
+.photo {width:40%;}
+}
+@media (min-width: 1200px) {
+.photo {width:40%;}
+}

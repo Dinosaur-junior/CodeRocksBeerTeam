@@ -5,7 +5,24 @@
 {% endblock %}
 
 {% block body %}
-<div class="counter">
-    <img src="https://cdn.dribbble.com/users/1006324/screenshots/3886784/media/77b2a9349061c6cff483ef1b34549b60.gif" width="60%">
+<div class="container">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="img-fluid photo"><br>
+
+    <a class="btn btn-lg btn-outline-dark" href="/production">Производство</a>&nbsp;&nbsp;
+    <a class="btn btn-lg  btn-outline-dark" href="/products">Линейка товаров</a>
+    <br>&nbsp;
+    <div class="p-3 mb-2 bg-light bg-gradient text-dark rounded" >
+        <p style="font-family: Pompadur, 'Comic Sans MS', cursive;">
+            Наша пивоваренная компания - это семейный бизнес,
+            который был основан более 20 лет назад.
+            Мы гордимся тем, что используем только лучшие ингредиенты и традиционные методы приготовления хмельного
+            продукта,
+            чтобы создавать настоящие шедевры. Наша продукция включает в себя широкий ассортимент прекрасных напитков,
+            от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей эликсира
+            молодости.
+            Мы стремимся к постоянному улучшению качества нашей продукции и обслуживания, чтобы наши клиенты могли
+            наслаждаться нашим пивом в любое время и в любом месте.
+        </p>
+    </div>
 </div>
 {% endblock %}

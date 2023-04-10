@@ -31,5 +31,9 @@ DATABASE_INFO = {'database': 'beer', 'host': '89.108.78.64', 'user': 'beer',
 # timezone
 TZ = pytz.timezone('Europe/Moscow')
 
+FLASK_SECRET_KEY = 'BeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeerBeer'
+ADMIN_LOGIN = 'beer'
+ADMIN_PASSWORD = 'beer1234'
+
 # path to the script
 path = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.realpath(__file__))
