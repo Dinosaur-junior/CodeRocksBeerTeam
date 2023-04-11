@@ -41,9 +41,7 @@ class User:
         self.beer_amount = 0
         self.about = about
         self.photo = None
-        self.info = {
-            'code_registered': None,
-        }
+        self.info = dict()
 
 
 class Role:
@@ -126,7 +124,6 @@ class Bot:
                     if not db.if_user_exists(message.from_user.id):
                         info = get_user(message)
                         cur_user.info = info
-                        cur_user.info['code_registered'] = None
                         new_user = (message.from_user.id, 
                                     cur_user.role, 
                                     cur_user.status, 
@@ -172,7 +169,7 @@ class Bot:
                     cur_user = User(id=message.chat.id)
                     self.users.append(cur_user)
 
-                if not cur_user.info['code_registered']:
+                if cur_user.role is None:
                     # if user not registered (no code)
                     if message.text == 'Ввести код':
                         msg = self.bot.send_message(chat_id=message.chat.id,
@@ -218,7 +215,7 @@ class Bot:
             cur_user = self.get_user(message.chat.id)
 
             if message.text == '<< Назад':
-                if not cur_user.info['code_registered']:
+                if cur_user.role is None:
                     # if user not registered (no code)
                     self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
                                         reply_markup=keyboard.menu())
@@ -244,7 +241,6 @@ class Bot:
                     self.bot.register_next_step_handler(msg, enter_code)
                 else:
                     # Correct code
-                    cur_user.info['code_registered'] = True
                     cur_user.role = role
 
                     # update db
@@ -258,7 +254,7 @@ class Bot:
         def enter_question(message):
             cur_user = self.get_user(message.chat.id)
                 
-            if not cur_user.info['code_registered']:
+            if cur_user.role is None:
                 # if user not registered (no code)
                 cur_keyboard = keyboard.menu
             else:
