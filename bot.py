@@ -29,6 +29,8 @@ from datetime import datetime
 # Creating database
 db = Database()
 
+# db.users_delete(1592698823)
+# print("DEL 1592698823")
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Another classes
@@ -171,6 +173,13 @@ class Bot:
 
                 if cur_user.role is None:
                     # if user not registered (no code)
+                    main_keyboard = keyboard.menu
+                else:
+                    # if user registered (yes code)
+                    main_keyboard = keyboard.menu_reg
+
+                if cur_user.role is None:
+                    # if user not registered (no code)
                     if message.text == 'Ввести код':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                               text='Введите код:',
@@ -182,7 +191,14 @@ class Bot:
                                               reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_question)
                     elif message.text == 'Посмотреть информацию о компании':
-                        pass
+                        msg = self.bot.send_message(chat_id=message.chat.id,
+                                              text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать:',
+                                              reply_markup=keyboard.start_btn())
+                        self.bot.register_next_step_handler(msg, start_cmp_info_game)
+                    else:
+                        msg = self.bot.send_message(chat_id=message.chat.id,
+                                            text='Неизвестная команда!',
+                                            reply_markup=main_keyboard())
                 else:
                     # if user registered (yes code)
                     if message.text == 'Частые вопросы':
@@ -201,6 +217,10 @@ class Bot:
                         pass
                     elif message.text == 'Мой профиль':
                         pass
+                    else:
+                        msg = self.bot.send_message(chat_id=message.chat.id,
+                                            text='Неизвестная команда!',
+                                            reply_markup=main_keyboard())
 
             # Error
             except Exception as e:
@@ -217,11 +237,11 @@ class Bot:
             if message.text == '<< Назад':
                 if cur_user.role is None:
                     # if user not registered (no code)
-                    self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                         reply_markup=keyboard.menu())
                 else:
                     # if user registered (yes code)
-                    self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                         reply_markup=keyboard.menu_reg())
             else:
                 db_code = db.access_codes_get_by_code(message.text)
@@ -262,7 +282,7 @@ class Bot:
                 cur_keyboard = keyboard.menu_reg
 
             if message.text == '<< Назад':
-                self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                     reply_markup=cur_keyboard())
             elif message.content_type not in ['photo', 'text']:
                 msg = self.bot.send_message(chat_id=message.chat.id,
@@ -285,7 +305,31 @@ class Bot:
                 self.bot.send_message(chat_id=message.chat.id,
                                       text='Ваш запрос успешно отправлен админам!',
                                       reply_markup=cur_keyboard())
+            
 
+        def start_cmp_info_game(message):
+            cur_user = self.get_user(message.chat.id)
+                
+            if cur_user.role is None:
+                # if user not registered (no code)
+                cur_keyboard = keyboard.menu
+            else:
+                # if user registered (yes code)
+                cur_keyboard = keyboard.menu_reg
+
+            if message.text == '<< Назад':
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                                    reply_markup=cur_keyboard())
+            elif message.text == 'СТАРТ':
+                self.bot.send_message(chat_id=message.chat.id,
+                                      text='Линейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?',
+                                      reply_markup=keyboard.cmp_info_game_1())
+            else:
+                msg = self.bot.send_message(chat_id=message.chat.id,
+                                      text='Неизвестная команда!',
+                                      reply_markup=keyboard.start_btn())
+                self.bot.register_next_step_handler(msg, start_cmp_info_game)
+        
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
 
@@ -293,9 +337,84 @@ class Bot:
         @self.bot.callback_query_handler(func=lambda call: True)
         def handle_query(call):
             try:
-                text = call.data.split()
-                print(text)
+                cur_user = self.get_user(call.message.chat.id)
 
+                if len(call.data.split('|')) == 2:
+                    prefix, data = call.data.split('|')
+                else:
+                    prefix, data, answ = call.data.split('|')
+                
+                if prefix == 'cmp_info_game':
+                    if data == '1':
+                        # Вопрос 1
+                        if answ == 'True':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 1/3\n\nЛинейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?\n\nОтвет: Действительно, наша компания производит 40 тонн пива каждый месяц, что позволяет многим людям пить пиво каждый день :)\n\nВам начислено +4 пива!',
+                                                    reply_markup=keyboard.cmp_info_game_1_answer())
+                            cur_user.beer_amount += 4
+                        elif answ == 'False':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 1/3\n\nЛинейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?\n\nОтвет: Действительно, наша компания производит 40 тонн пива каждый месяц, что позволяет многим людям пить пиво каждый день :)',
+                                                    reply_markup=keyboard.cmp_info_game_1_answer())
+                        elif answ == 'next':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                   message_id=call.message.id,
+                                                   text='Вопрос 2/3\n\n',
+                                                   reply_markup=keyboard.cmp_info_game_2())
+                    elif data == '2':
+                        # Вопрос 2
+                        if answ == 'True':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 2/3\n\nОтвет: ...\n\nВам начислено +4 пива!',
+                                                    reply_markup=keyboard.cmp_info_game_2_answer())
+                            cur_user.beer_amount += 4
+                        elif answ == 'False':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 2/3\n\nОтвет: ...',
+                                                    reply_markup=keyboard.cmp_info_game_2_answer())
+                        elif answ == 'next':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                   message_id=call.message.id,
+                                                   text='Вопрос 3/3\n\n',
+                                                   reply_markup=keyboard.cmp_info_game_3())
+                    elif data == '3':
+                        # Вопрос 3
+                        if answ == 'True':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 3/3\n\nОтвет: ...\n\nВам начислено +4 пива!',
+                                                    reply_markup=keyboard.cmp_info_game_3_answer())
+                            cur_user.beer_amount += 4
+                        elif answ == 'False':
+                            self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                    message_id=call.message.id,
+                                                    text='Вопрос 3/3\n\nОтвет: ...',
+                                                    reply_markup=keyboard.cmp_info_game_3_answer())
+                        # elif answ == 'next':
+                        #     self.bot.edit_message_text(chat_id=call.message.chat.id,
+                        #                            message_id=call.message.id,
+                        #                            text=f'Молодцы, теперь Вы ознакомлены с нашей компанией!',
+                        #                            reply_markup=keyboard.cmp_info_game_3())
+                    elif data == 'end':
+                        # Завершить игру
+                        cur_user = self.get_user(call.message.chat.id)
+
+                        self.bot.delete_message(chat_id=call.message.chat.id,
+                                                message_id=call.message.id)
+                        
+                        if cur_user.role is None:
+                            # if user not registered (no code)
+                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
+                                                reply_markup=keyboard.menu())
+                        else:
+                            # if user registered (yes code)
+                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
+                                                reply_markup=keyboard.menu_reg())
+                        
             except Exception as e:
                 print_error(e)
                 self.bot.send_message(call.from_user.id, 'Возникла ошибка')

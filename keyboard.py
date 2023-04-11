@@ -49,3 +49,54 @@ def back():
     return create_keyboard([
         ['<< Назад']
     ])
+
+
+def start_btn():
+    return create_keyboard([
+        ['СТАРТ'],
+        ['<< Назад']
+    ])
+
+
+def cmp_info_game_1():
+    return create_inline_keyboard([
+        [('1 л', 'cmp_info_game|1|False'), ('100 л', 'cmp_info_game|1|False'), ('40 тонн', 'cmp_info_game|1|True')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+def cmp_info_game_1_answer():
+    return create_inline_keyboard([
+        [('❌ 1 л', 'cmp_info_game|1|'), ('❌ 100 л', 'cmp_info_game|1|'), ('✅ 40 тонн', 'cmp_info_game|1|')],
+        [('Далее >>', 'cmp_info_game|1|next')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+def cmp_info_game_2():
+    return create_inline_keyboard([
+        [('1', 'cmp_info_game|2|True'), ('2', 'cmp_info_game|2|False')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+def cmp_info_game_2_answer():
+    return create_inline_keyboard([
+        [('✅ 1', 'cmp_info_game|2|'), ('❌ 2', 'cmp_info_game|2|')],
+        [('Далее >>', 'cmp_info_game|2|next')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+def cmp_info_game_3():
+    return create_inline_keyboard([
+        [('1', 'cmp_info_game|3|True'), ('2', 'cmp_info_game|3|False')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+def cmp_info_game_3_answer():
+    return create_inline_keyboard([
+        [('✅ 1', 'cmp_info_game|3|'), ('❌ 2', 'cmp_info_game|3|')],
+        [('Завершить игру', 'cmp_info_game|end')]
+    ])
