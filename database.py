@@ -328,7 +328,7 @@ class Database:
                     "VALUES(%s, %s, %s, %s, %s);", new_messages)
 
     def unread_messages(self):
-        return self.get_all("SELECT id FROM users WHERE info ->> 'unread' = 'True';")
+        return self.get_all("SELECT id FROM users WHERE info ->> 'unread'=%s;", ('True', ))
 
     def users_get_with_dialogs(self):
         messages = self.messages_get_all()
@@ -346,14 +346,20 @@ class Database:
     def jobs_get_one(self, jobs_id):
         return self.get_one("SELECT * FROM jobs WHERE id=%s;", (int(jobs_id),))
 
+    def jobs_get_by_name(self, jobs_name):
+        return self.get_one("SELECT * FROM jobs WHERE name=%s;", (jobs_name,))
+
     # add jobs
     def jobs_add(self, new_jobs):
         self.insert("INSERT INTO jobs(name, description, photo) VALUES(%s, %s, %s);", new_jobs)
+        return self.get_one("select currval(pg_get_serial_sequence('jobs', 'id'));")[0]
 
     # delete jobs by id
     def jobs_delete(self, jobs_id):
-        return self.get_one("DELETE * FROM jobs WHERE id=%s;", (int(jobs_id),))
+        return self.insert("DELETE FROM jobs WHERE id=%s;", (int(jobs_id),))
 
+    def jobs_update_info(self, jobs_id, key, value):
+        self.insert(f"UPDATE jobs SET {key}=%s WHERE id=%s;", (value, jobs_id))
     # --------------------------------------------
     # EXCEL STATISTIC
 
@@ -391,4 +397,5 @@ class Database:
 if __name__ == '__main__':
     database = Database()
     # database.drop_all()
+    #database.insert('drop table jobs')
     database.setup()
