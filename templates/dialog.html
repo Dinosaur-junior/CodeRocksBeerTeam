@@ -11,44 +11,26 @@
     <h3 class="text-center" align="center"><strong>{{user[1]}}</strong></h3>
     <hr>
 
-    <div class="container anyClass" id="block">
+    <div class="prokrutka" style="height:62%;position:fixed;width:80%;left:10%;" align="left" id="block">
+        <div class="container ">
 
-        <div class="row">
+            <div class="row">
 
-            {% for message in messages %}
+                {% for message in messages %}
 
-            {% if message[4] == True %}
+                {% if message[3] == True %}
 
-            <div class="d-flex flex-row justify-content-end mb-4">
-                <div class="card mb-4 rounded-3 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">
-                            {{message[3].strftime('%H:%M %d.%m.%Y')}}<br>
-                        </h6>
-                        <hr>
-                        <p class="card-text">{{message[5]}}</p>
-                        {% if message[6] is not none %}
-                        <div class="bg-image">
-                            <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть файл</a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            {% else %}
-
-            <div class="d-flex flex-row justify-content-start mb-4">
-                <div class="ms-3" style="border-radius: 15px;">
+                <div class="d-flex flex-row justify-content-end mb-4">
                     <div class="card mb-4 rounded-3 shadow-sm">
                         <div class="card-body">
                             <h6 class="card-subtitle mb-2 text-muted">
-                                {{message[3].strftime('%H:%M %d.%m.%Y')}}<br>
-                                {{message[2]}}
+                                {{message[2].strftime('%H:%M %d.%m.%Y')}}<br>
                             </h6>
                             <hr>
-                            <p class="card-text">{{message[5]}}</p>
-                            {% if message[6] is not none %}
+                            <p class="card-text">{% if message[4] is not none%}
+                                    {{message[4]}}
+                                    {% endif%}</p>
+                            {% if message[5] is not none %}
                             <div class="bg-image">
                                 <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть
                                     файл</a>
@@ -57,39 +39,71 @@
                         </div>
                     </div>
                 </div>
+
+                {% else %}
+
+                <div class="d-flex flex-row justify-content-start mb-4">
+                    <div class="ms-3" style="border-radius: 15px;">
+                        <div class="card mb-4 rounded-3 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    {{message[2].strftime('%H:%M %d.%m.%Y')}}<br>
+                                    {{message[1]}}
+                                </h6>
+                                <hr>
+                                <p class="card-text">
+
+                                    {% if message[4] is not none%}
+                                    {{message[4]}}
+                                    {% endif%}
+                                </p>
+                                {% if message[5] is not none %}
+                                <div class="bg-image">
+                                    <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть
+                                        файл</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% endif %}
+
+                {% endfor %}
+
             </div>
-
-            {% endif %}
-
-            {% endfor %}
-
         </div>
-    </div>
-    <hr>
+        <hr>
 
-    <div class="publisher bt-1 border-light">
-        <div class="container">
-            <form method="post" enctype="multipart/form-data"
-                  action="{{ url_for('dialog_answer', user_id=user[0], ) }}" class="form">
-                <div class="form-group">
+        <div class="publisher bt-1 border-light">
+            <div class="container">
+                <form method="post" enctype="multipart/form-data"
+                      action="{{ url_for('dialog_answer', user_id=user[0], ) }}" class="form">
+                    <div class="form-group">
                      <textarea name="text" class="form-control" placeholder="Введите сообщение"
                                required></textarea>
-                    <input type="file" name="file" class="form-control"  placeholder="Прикрепите файл">
-                    <br>
-                    <input type="submit" value="Отправить" class="form-control btn-outline-success">
-                </div>
-            </form>
+                        <input type="file" name="file" class="form-control" placeholder="Прикрепите файл">
+                        <br>
+                        <input type="submit" value="Отправить" class="form-control btn-outline-success">
+                    </div>
+                </form>
+            </div>
         </div>
+
     </div>
-    <br>
-    <a href="/dialogs" class="btn btn-outline-dark btn-lg"> К диалогам </a>
-    <br>
-    <br>
+    <div class="container" style="position: absolute;bottom: 7%;">
+        <a href="/dialogs" class="btn btn-outline-dark btn-lg"> К диалогам </a>
+        <br>
+    </div>
 </div>
 
 <script type="text/javascript">
   var block = document.getElementById("block");
   block.scrollTop = block.scrollHeight;
+
+
+
 
 </script>
 

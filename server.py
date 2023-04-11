@@ -19,7 +19,8 @@ import fleep
 from flask import Flask, render_template, send_from_directory, Response, request, redirect, send_file, flash
 from flask_wtf import FlaskForm
 from telebot import TeleBot
-from wtforms import StringField, TextAreaField, SubmitField, SelectMultipleField, widgets, SelectField, BooleanField
+from wtforms import StringField, TextAreaField, SubmitField, SelectMultipleField, widgets, SelectField, BooleanField, \
+    FileField
 from wtforms.validators import DataRequired, Length
 
 import config
@@ -43,6 +44,7 @@ bot = TeleBot(config.BOT_TOKEN)
 
 # for mailings
 mailings = {}
+jobs = {}
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -126,12 +128,10 @@ def history():
 
 @app.route('/cooperation', methods=['GET'])
 def cooperation():
-    images = {i[:i.rfind('.')]: i for i in os.listdir(os.path.join(path, 'static'))}
-    workers = {'Пивовар': 'BeerCoders ищет опытного пивовара, который будет отвечать за '
-                          'производство высококачественного пива.',
-               'Python developer': "BeerCoders ищет опытного Python Developer'а для разработки и поддержки ПО для "
-                                   "производства пива."}
-    return render_template('cooperation.html', workers=workers, images=images)
+    global jobs
+    all_jobs = db.jobs_get_all()
+    jobs = {i[0]: i for i in all_jobs}
+    return render_template('cooperation.html', jobs=all_jobs)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ def users_base():
 @requires_auth
 def dialog_message_photo(message_id):
     try:
-        file = db.messages_get_one(message_id)[6]
+        file = db.messages_get_one(message_id)[5]
         f = io.BytesIO()
         f.write(file)
         f.seek(0)
@@ -302,7 +302,7 @@ def dialog_answer(user_id):
                 return render_template('error.html')
 
             else:
-                new_message = (user_id, 'ответ', datetime.datetime.now(), True, text, files)
+                new_message = (user_id, datetime.datetime.now(), True, text, files)
                 db.messages_add(new_message)
 
                 if files is not None:
@@ -341,6 +341,115 @@ def dialog_answer(user_id):
 @requires_auth
 def roles_setup():
     return render_template('roles_setup.html', roles=db.roles_get_all())
+
+
+@app.route('/jobs_setup', methods=['GET'])
+@requires_auth
+def jobs_setup():
+    global jobs
+    all_jobs = db.jobs_get_all()
+    jobs = {i[0]: i for i in all_jobs}
+    return render_template('jobs_setup.html', jobs=all_jobs)
+
+
+class JobForm(FlaskForm):
+    name = StringField("Название", validators=[DataRequired()])
+    description = TextAreaField("Описание", validators=[DataRequired()])
+    file = FileField("Фото", validators=[DataRequired()])
+    submit = SubmitField("Добавить")
+
+
+# add role
+@app.route('/add_job', methods=['GET', 'POST'])
+@requires_auth
+def add_job():
+    form = JobForm()
+    if request.method == 'POST':
+        try:
+            name = form.name.data
+            description = form.description.data
+            file = form.file.data
+            job = db.jobs_get_by_name(name)
+            if job is not None:
+                flash('Должность с таким именем уже существует', 'add_job')
+                return render_template('add_job.html', form=form)
+
+            else:
+                new_job = (name, description, file.read())
+                db.jobs_add(new_job)
+            return redirect('/jobs_setup')
+        except Exception as e:
+            print_error(e)
+            return render_template('add_job.html', form=form)
+
+    else:
+        return render_template('add_job.html', form=form)
+
+
+@app.route('/delete_jobs/<int:job_id>', methods=['GET'])
+@requires_auth
+def delete_jobs(job_id):
+    db.jobs_delete(job_id)
+    return redirect('/jobs_setup')
+
+
+@app.route('/job_photo/<int:job_id>', methods=['GET'])
+def job_photo(job_id):
+    global jobs
+    try:
+        product = jobs[job_id]
+        while product is None:
+            product = db.jobs_get_one(job_id)
+        file = product[3]
+        f = io.BytesIO()
+        f.write(file)
+        f.seek(0)
+        return send_file(f, as_attachment=True, download_name=f'photo{job_id}.jpg')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# edit job
+@app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
+@requires_auth
+def edit_job(job_id):
+    job = db.jobs_get_one(job_id)
+    if request.method == 'POST':
+        form = JobForm()
+        try:
+            name = form.name.data
+            description = form.description.data
+            file = form.file.data.read()
+            if name != job[1]:
+                new_duty = db.jobs_get_by_name(name)
+                if new_duty is not None:
+                    flash('Вакансия с таким именем уже существует', 'add_job')
+                    return render_template('edit_job.html', form=form, job=job)
+                else:
+                    db.jobs_update_info(job_id, 'name', name)
+
+            if description != job[2]:
+                db.jobs_update_info(job_id, 'description', description)
+
+            if file != job[3]:
+                db.jobs_update_info(job_id, 'photo', file)
+
+            flash('Должность изменена', 'edit_job_success')
+
+            return render_template('edit_job.html', form=form, job=job)
+        except Exception as e:
+            print_error(e)
+
+        return render_template('edit_job.html', form=form, job=job)
+    else:
+        form = JobForm()
+        form.name.data = job[1]
+        form.description.data = job[2]
+        form.file.data = job[3]
+
+        return render_template('edit_job.html', form=form, job=job)
 
 
 class MultiCheckboxField(SelectMultipleField):

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{job[1]}}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    <h1>Вакансия {{job[1]}}</h1><br>
+    {% with messages = get_flashed_messages(category_filter='add_job') %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% with messages = get_flashed_messages(category_filter='edit_job_success') %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-success" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <br>
+    <div class="container">
+        <form method="post" enctype="multipart/form-data" action="{{url_for('edit_job', job_id=job[0])}}"
+              class="form">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                {{ form.name(class_="form-control", placeholder_="Название", required=False) }}<br>
+                {{ form.description(class_="form-control", placeholder_="Описание", required=False) }}<br>
+                {{ form.file(class_="form-control", placeholder_="Вопрос", required=False) }}<br>
+
+                {{ form.submit(class_="form-control btn-success", value="Обновить") }}
+            </div>
+        </form>
+    </div>
+
+    <button type="button" class="btn btn-lg btn-outline-danger modalButton"
+            data-name="{{url_for('delete_jobs', job_id=job[0])}} {{job[1]}}"
+            data-toggle="modal">Удалить 🗑
+    </button>
+    <br><br>
+    <a href="/jobs_setup" class="btn btn-outline-dark btn-lg"> К вакансиям </a><br>&nbsp;
+
+</div>
+
+<div class="modal fade" id="myModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления вакансии</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы точно хотите удалить обязанность</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
+                <a type="button" class="btn btn-danger delete_button" href="">Удалить </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+$(document).ready(function(e) {
+    $('#myModal').modal({
+        backdrop: 'static',
+        keyboard: false,
+        show: false,
+    });
+
+    $(document).on("click", ".modalButton", function() {
+
+        var ClickedButton = $(this).data("name");
+        var domain = ClickedButton.split(' ')[1];
+        var url = ClickedButton.split(' ')[0];
+
+        $(".modal-body").html("<p>" + "Вы точно хотите удалить обязанность " + domain + "?" + "</p>");
+        $("a.delete_button").attr("href", url)
+        $('#myModal').modal('show');
+    });
+
+    $(document).on("click", ".btn-close", function() {
+        $('#myModal').modal('hide');
+    });
+
+    $(document).on("click", ".btn_close_2", function() {
+        $('#myModal').modal('hide');
+    });
+
+});
+
+
+</script>
+{% endblock %}

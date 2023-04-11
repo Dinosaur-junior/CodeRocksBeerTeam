@@ -5,15 +5,28 @@
 {% endblock %}
 
 {% block body %}
-<br>
 <div class="container">
     <br>
     {% if jobs|length == 0 %}
-    <h1 align="center"> Нет активных вакансий </h1>
+    <h1 align="center"> Нет добавленных вакансий </h1>
     {% endif %}
     <br>
 
     <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Новая вакансия</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="/add_job" class="btn btn-outline-dark">Добавить</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
 
         {% for job in jobs %}
 
@@ -28,7 +41,7 @@
                     <div class="card-body">
                         <p class="card-text">{{job[2]}}</p>
                         <hr>
-                        <a href="https://t.me/beerCoders_codeRocks_bot" class="btn btn-outline-dark">Перейти</a>
+                        <a href="{{url_for('edit_job', job_id=job[0])}}" class="btn btn-outline-dark">Редактировать</a>
                     </div>
                 </div>
             </div>
@@ -38,7 +51,7 @@
         {% endfor %}
     </div>
 
-    <a href="/" class="btn btn-lg btn-outline-dark">На главную</a><br>&nbsp;
-</div>
 
+    <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a>
+</div>
 {% endblock %}
