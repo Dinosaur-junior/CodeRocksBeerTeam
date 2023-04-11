@@ -54,7 +54,25 @@ class Database:
         # tables
         self.tables = {'users': '''CREATE TABLE IF NOT EXISTS users 
                                     (id             BIGINT PRIMARY KEY   NOT NULL,
+                                    role            INT                           ,
+                                    status          TEXT                 NOT NULL,
+                                    beer_amount     BIGINT               NOT NULL,
+                                    about           TEXT                         ,
+                                    photo           BYTEA                        ,
                                     info            JSON                 NOT NULL); ''',
+
+                       'roles': '''CREATE TABLE IF NOT EXISTS roles 
+                                    (id             SERIAL PRIMARY KEY   NOT NULL,
+                                    name            TEXT                 NOT NULL,
+                                    duties          TEXT ARRAY           NOT NULL,
+                                    access_codes    TEXT  ARRAY          NOT NULL); ''',
+
+                       'duties': '''CREATE TABLE IF NOT EXISTS duties 
+                                    (id             SERIAL PRIMARY KEY   NOT NULL,
+                                    name            TEXT                 NOT NULL,
+                                    about           TEXT                 NOT NULL,
+                                    question        TEXT                 NOT NULL,
+                                    answers         JSON                 NOT NULL); ''',
 
                        }
 
@@ -176,7 +194,8 @@ class Database:
     # add user
     def users_add(self, new_user):
         if self.users_get_one(new_user[0]) is None:
-            self.insert("INSERT INTO users(id, info)  VALUES(%s, %s);", new_user)
+            self.insert("INSERT INTO users(id, role, status, beer_amount, about_photo, info)  "
+                        "VALUES(%s, %s, %s, %s, %s, %s);", new_user)
 
     # edit users info
     def users_update_info(self, user_id, key, value):
@@ -186,6 +205,60 @@ class Database:
     def if_user_exists(self, user_id):
         user = self.users_get_one(user_id)
         return True if user is not None else False
+
+    # --------------------------------------
+    # duties
+
+    # get all duties
+    def duties_get_all(self):
+        return self.get_all('SELECT * FROM duties;')
+
+    # get duties by id
+    def duties_get_one(self, duties_id):
+        return self.get_one("SELECT * FROM duties WHERE id=%s;", (int(duties_id),))
+
+    # get duties by name
+    def duties_get_by_name(self, duties_name):
+        return self.get_one("""SELECT * FROM duties WHERE name = %s;""", ('name', duties_name,))
+
+    # delete duties
+    def duties_delete(self, duties_id):
+        self.insert("DELETE FROM duties WHERE id=%s;", (int(duties_id),))
+
+    # add duties
+    def duties_add(self, new_duties):
+        self.insert("INSERT INTO duties(name, about, question, answers) VALUES(%s, %s, %s, %s);", new_duties)
+
+    # edit duties info
+    def duties_update_info(self, duties_id, key, value):
+        self.insert(f"UPDATE duties SET {key}=%s WHERE id=%s;", (value, duties_id))
+
+    # --------------------------------------
+    # roles
+
+    # get all roles
+    def roles_get_all(self):
+        return self.get_all('SELECT * FROM roles;')
+
+    # get roles by id
+    def roles_get_one(self, roles_id):
+        return self.get_one("SELECT * FROM roles WHERE roles=%s;", (int(roles_id),))
+
+    # get roles by name
+    def roles_get_by_name(self, role_name):
+        return self.get_one("""SELECT * FROM roles WHERE name = %s;""", ('name', role_name,))
+
+    # delete roles
+    def roles_delete(self, roles_id):
+        self.insert("DELETE FROM roles WHERE id=%s;", (int(roles_id),))
+
+    # add roles
+    def roles_add(self, new_roles):
+        self.insert("INSERT INTO roles(name, duties, access_codes)  VALUES(%s, %s, %s);", new_roles)
+
+    # edit roles info
+    def roles_update_info(self, roles_id, key, value):
+        self.insert(f"UPDATE roles SET {key}=%s WHERE id=%s;", (value, roles_id))
 
     # --------------------------------------------
     # EXCEL STATISTIC
