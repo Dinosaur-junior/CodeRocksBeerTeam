@@ -20,6 +20,7 @@ from database import Database
 from funcitons import get_user, print_error, log
 
 import json
+from datetime import datetime
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -116,18 +117,35 @@ class Bot:
             try:
                 if message.chat.type not in ('group', 'supergroup', 'channel'):
 
+                    cur_user = self.get_user(message.chat.id)
+                    if cur_user is None:
+                        cur_user = User(id=message.chat.id)
+                        self.users.append(cur_user)
+
                     # if user is not exists
                     if not db.if_user_exists(message.from_user.id):
                         info = get_user(message)
-                        new_user = (message.from_user.id, json.dumps(info))
+                        cur_user.info = info
+                        cur_user.info['code_registered'] = None
+                        new_user = (message.from_user.id, 
+                                    cur_user.role, 
+                                    cur_user.status, 
+                                    cur_user.beer_amount, 
+                                    cur_user.about, 
+                                    cur_user.photo, 
+                                    json.dumps(cur_user.info))
                         db.users_add(new_user)
-            
-                        cur_user = User(id=message.chat.id)
-                        self.users.append(cur_user)
                     else:
-                        cur_user = self.get_user(message.chat.id)
+                        # if user exist - get from db
+                        db_user = db.users_get_one(message.chat.id)
+                        cur_user.role = db_user[1]
+                        cur_user.status = db_user[2]
+                        cur_user.beer_amount = db_user[3]
+                        cur_user.about = db_user[4]
+                        cur_user.photo = db_user[5]
+                        cur_user.info = db_user[6]
 
-                    if not cur_user.info['code_registered']:
+                    if cur_user.role is None:
                         # if user not registered (no code)
                         self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
                                             reply_markup=keyboard.menu())
@@ -170,7 +188,22 @@ class Bot:
                         pass
                 else:
                     # if user registered (yes code)
-                    pass
+                    if message.text == 'Частые вопросы':
+                        pass
+                    elif message.text == 'Мои коллеги':
+                        pass
+                    elif message.text == 'Мои обязанности':
+                        pass
+                    elif message.text == 'Пройти обучение':
+                        pass
+                    elif message.text == 'Связаться с админом':
+                        pass
+                    elif message.text == 'Информация о компании':
+                        pass
+                    elif message.text == 'Карта офиса':
+                        pass
+                    elif message.text == 'Мой профиль':
+                        pass
 
             # Error
             except Exception as e:
@@ -213,6 +246,9 @@ class Bot:
                     # Correct code
                     cur_user.info['code_registered'] = True
                     cur_user.role = role
+
+                    # update db
+                    db.users_update_info(message.chat.id, "role", cur_user.role.id)
                     
                     self.bot.send_message(chat_id=message.chat.id,
                                           text=f'Код успешно подтвержден!\nВам выдана роль: {cur_user.role.name}',
@@ -221,18 +257,38 @@ class Bot:
 
         def enter_question(message):
             cur_user = self.get_user(message.chat.id)
+                
+            if not cur_user.info['code_registered']:
+                # if user not registered (no code)
+                cur_keyboard = keyboard.menu
+            else:
+                # if user registered (yes code)
+                cur_keyboard = keyboard.menu_reg
 
             if message.text == '<< Назад':
-                if not cur_user.info['code_registered']:
-                    # if user not registered (no code)
-                    self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
-                                        reply_markup=keyboard.menu())
-                else:
-                    # if user registered (yes code)
-                    self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
-                                        reply_markup=keyboard.menu_reg())
+                self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                                    reply_markup=cur_keyboard())
+            elif message.content_type not in ['photo', 'text']:
+                msg = self.bot.send_message(chat_id=message.chat.id,
+                                      text='Вопрос может быть либо текстовый, либо картинка!\nПожалуйста, повторите свой запрос в корректном формате:',
+                                      reply_markup=keyboard.back())
+                self.bot.register_next_step_handler(msg, enter_code)
             else:
-                pass
+                if message.content_type == 'photo':
+                    file_info = self.bot.get_file(message.photo[-1].file_id)
+                    downloaded_file = self.bot.download_file(file_info.file_path)
+                    question_data = downloaded_file
+                else:
+                    question_data = None
+
+                # Send request to admins
+                db.messages_add((message.chat.id, datetime.now(), False, message.text, question_data))
+                cur_user.info['unread'] = "True"
+                db.users_update_info(cur_user.id, "info", json.dumps(cur_user.info))
+
+                self.bot.send_message(chat_id=message.chat.id,
+                                      text='Ваш запрос успешно отправлен админам!',
+                                      reply_markup=cur_keyboard())
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
