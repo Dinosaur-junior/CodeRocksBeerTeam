@@ -22,7 +22,8 @@ import pytz
 # configuration
 
 # bot token
-BOT_TOKEN = '6209088703:AAGIaIi_S5EIBAU3Y3yMIOpGQAoghlsw508'
+# BOT_TOKEN = '6209088703:AAGIaIi_S5EIBAU3Y3yMIOpGQAoghlsw508'
+BOT_TOKEN = '6069953990:AAF5DQIFy6xJIbm3zmGw9ifH5rQAJGW4VW4'
 
 # database info
 DATABASE_INFO = {'database': 'beer', 'host': '89.108.78.64', 'user': 'beer',

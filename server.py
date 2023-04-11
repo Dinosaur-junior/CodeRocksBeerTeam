@@ -19,8 +19,8 @@ import fleep
 from flask import Flask, render_template, send_from_directory, Response, request, redirect, send_file, flash
 from flask_wtf import FlaskForm
 from telebot import TeleBot
-from wtforms import StringField, TextAreaField, SubmitField, SelectMultipleField, widgets
-from wtforms.validators import DataRequired
+from wtforms import StringField, TextAreaField, SubmitField, SelectMultipleField, widgets, SelectField, BooleanField
+from wtforms.validators import DataRequired, Length
 
 import config
 from config import path
@@ -115,6 +115,23 @@ def production():
 def products():
     images = [i for i in os.listdir(os.path.join(path, 'static')) if 'product' in i and 'production' not in i]
     return render_template('products.html', images=images, images_i=[i for i in range(1, len(images))])
+
+
+# history info
+@app.route('/history', methods=['GET'])
+def history():
+    images = [i for i in os.listdir(os.path.join(path, 'static')) if 'history' in i]
+    return render_template('history.html', images=images, images_i=[i for i in range(1, len(images))])
+
+
+@app.route('/cooperation', methods=['GET'])
+def cooperation():
+    images = {i[:i.rfind('.')]: i for i in os.listdir(os.path.join(path, 'static'))}
+    workers = {'Пивовар': 'BeerCoders ищет опытного пивовара, который будет отвечать за '
+                          'производство высококачественного пива.',
+               'Python developer': "BeerCoders ищет опытного Python Developer'а для разработки и поддержки ПО для "
+                                   "производства пива."}
+    return render_template('cooperation.html', workers=workers, images=images)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -333,7 +350,7 @@ class MultiCheckboxField(SelectMultipleField):
 
 class RoleForm(FlaskForm):
     name = StringField("Название", validators=[DataRequired()])
-    duties = MultiCheckboxField("Должности", choices=[(i[0], i[1]) for i in db.duties_get_all()], coerce=int)
+    duties = MultiCheckboxField("Обязанности", choices=[(i[0], i[1]) for i in db.duties_get_all()], coerce=int)
     submit = SubmitField("Добавить")
 
 
@@ -404,8 +421,8 @@ def edit_role(role_id):
 @requires_auth
 def delete_role(role_id):
     db.roles_delete(role_id)
-    access_codes = db.access_codes_get_by_role(role_id)
-    for code in access_codes:
+    access_codes_list = db.access_codes_get_by_role(role_id)
+    for code in access_codes_list:
         db.access_codes_delete(code[0])
     return redirect('/roles_setup')
 
@@ -524,10 +541,42 @@ def delete_duty(duty_id):
     return redirect('/duties_setup')
 
 
+class AccessCodeForm(FlaskForm):
+    role = SelectField("Должности", choices=[(i[0], i[1]) for i in [('', '---')] + db.roles_get_all()],
+                       validators=[DataRequired(), Length(min=1)])
+    one_time = BooleanField('Одноразовый')
+    submit = SubmitField("Добавить")
+
+
 @app.route('/access_codes', methods=['GET', 'POST'])
 @requires_auth
 def access_codes():
-    return render_template('access_codes.html', codes=db.access_codes_get_all())
+    form = AccessCodeForm()
+    roles = {i[0]: i[1] for i in db.roles_get_all()}
+    return render_template('access_codes.html', codes=db.access_codes_get_all(), form=form, roles=roles)
+
+
+@app.route('/delete_access_code/<int:code_id>', methods=['GET'])
+@requires_auth
+def delete_access_code(code_id):
+    db.access_codes_delete(code_id)
+    return redirect('/access_codes')
+
+
+@app.route('/add_access_code', methods=['POST'])
+@requires_auth
+def add_access_code():
+    form = AccessCodeForm()
+    if form.validate_on_submit():
+        try:
+            code = create_password()
+            new_code = (form.role.data, code, form.one_time.data)
+            db.access_codes_add(new_code)
+            flash(f'Код "{code}" был добавлен', 'add_access_code')
+        except Exception as e:
+            print_error(e)
+
+    return redirect('/access_codes')
 
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -53,3 +53,22 @@ main.container-fluid {margin:0;padding:0;}
 .photo {width:35%;}
 .car {width:50%;}
 }
+
+table {
+    border-collapse: collapse;
+    border-style: hidden;
+    padding:5px;
+}
+
+table td, table th {
+    border: 1px solid black;
+    padding:7px;
+}
+
+
+.prokrutka {
+background: #fff; /* цвет фона, белый */
+border: 1px solid #C1C1C1; /* размер и цвет границы блока */
+overflow-y: auto; /* прокрутка по вертикали */
+padding:5px;
+}

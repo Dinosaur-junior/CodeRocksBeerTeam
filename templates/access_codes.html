@@ -11,8 +11,148 @@
     <h1>Нет добавленных кодов</h1>
     {% endif %}
 
+    {% with messages = get_flashed_messages(category_filter='add_access_code') %}
+    {% if messages %}
     <br>
-    <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a><br>&nbsp;
+    {% for message in messages %}
+    <div class="alert alert-success" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <br>
 
+    <button class="btn btn-lg btn-outline-dark" type="button" data-toggle="collapse"
+            data-target="#collapse_add_code"
+            aria-expanded="false" aria-controls="collapse_add_code">Добавить код доступа
+    </button>
+
+    <div class="collapse" id="collapse_add_code">
+        <hr>
+        <form method="post" enctype="multipart/form-data" action="/add_access_code" class="form">
+            <div class="form-group" align="left">
+                {{ form.hidden_tag() }}
+                {{ form.role(class_="form-control", placeholder_="Название") }}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ form.one_time(class_="form-check-input", placeholder_="Описание",
+                id="flexCheckDefault") }}
+                <label class="form-check-label" for="flexCheckDefault" style="font-size:15pt">
+                    Одноразовый код
+                </label><br>
+                <br>
+                {{ form.submit(class_="form-control btn-success") }}
+            </div>
+        </form>
+        <hr>
+    </div>
+    <br><br>
+
+    {% if codes|length > 0 %}
+    <div class="prokrutka" style="height:50%;position:fixed;width:80%;left:10%;" align="left" id="block">
+        <table width="100%" style="border: 1px solid black; border-collapse: collapse; width:100%" border="1">
+            <tr>
+                <th>Код</th>
+                <th>Должность</th>
+                <th>Одноразовый</th>
+                <td>&nbsp;</td>
+            </tr>
+
+            {% for code in codes %}
+
+            <tr>
+                <td>
+                    <button onclick="copyToClipboard('#code{{code[0]}}')" id="code{{code[0]}}"
+                            class="btn btn-outline-secondary">{{code[2]}}
+                    </button>
+                </td>
+                <td>{{roles[code[1]]}}</td>
+                <td>{% if code[3] %}
+                    Да
+                    {% else %}
+                    Нет
+                    {% endif %}
+                    </td>
+                <td>
+                    <button type="button" class="btn btn-lg btn-outline-danger modalButton"
+                            data-name="{{url_for('delete_access_code', code_id=code[0])}} {{code[2]}}"
+                            data-toggle="modal">🗑
+                    </button>
+                </td>
+            </tr>
+
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <br>
+    <br>
+    <div class="container" style="position: absolute;bottom: 10%;">
+        <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a><br>&nbsp;
+    </div>
 </div>
+
+<script>
+    function copyToClipboard(element) {
+          var $temp = $("<input>");
+          $("body").append($temp);
+          $temp.val($(element).text()).select();
+          document.execCommand("copy");
+    }
+
+
+</script>
+
+
+<div class="modal fade" id="myModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления кода</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы точно хотите удалить код</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
+                <a type="button" class="btn btn-danger delete_button" href="">Удалить </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+$(document).ready(function(e) {
+    $('#myModal').modal({
+        backdrop: 'static',
+        keyboard: false,
+        show: false,
+    });
+
+    $(document).on("click", ".modalButton", function() {
+
+        var ClickedButton = $(this).data("name");
+        var domain = ClickedButton.split(' ')[1];
+        var url = ClickedButton.split(' ')[0];
+
+        $(".modal-body").html("<p>" + "Вы точно хотите удалить кода " + domain + "?" + "</p>");
+        $("a.delete_button").attr("href", url)
+        $('#myModal').modal('show');
+    });
+
+    $(document).on("click", ".btn-close", function() {
+        $('#myModal').modal('hide');
+    });
+
+    $(document).on("click", ".btn_close_2", function() {
+        $('#myModal').modal('hide');
+    });
+
+});
+
+
+
+</script>
 {% endblock %}
