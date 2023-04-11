@@ -64,8 +64,13 @@ class Database:
                        'roles': '''CREATE TABLE IF NOT EXISTS roles 
                                     (id             SERIAL PRIMARY KEY   NOT NULL,
                                     name            TEXT                 NOT NULL,
-                                    duties          TEXT ARRAY           NOT NULL,
-                                    access_codes    TEXT  ARRAY          NOT NULL); ''',
+                                    duties          INT   ARRAY          NOT NULL); ''',
+
+                       'access_codes': '''CREATE TABLE IF NOT EXISTS access_codes 
+                                    (id             SERIAL PRIMARY KEY   NOT NULL,
+                                    role            INT                  NOT NULL,
+                                    code            TEXT                 NOT NULL,
+                                    one_time        BOOLEAN              NOT NULL); ''',
 
                        'duties': '''CREATE TABLE IF NOT EXISTS duties 
                                     (id             SERIAL PRIMARY KEY   NOT NULL,
@@ -73,6 +78,14 @@ class Database:
                                     about           TEXT                 NOT NULL,
                                     question        TEXT                 NOT NULL,
                                     answers         JSON                 NOT NULL); ''',
+
+                       'messages': '''CREATE TABLE IF NOT EXISTS messages
+                                     (id              SERIAL PRIMARY KEY   NOT NULL,
+                                     user_id          BIGINT               NOT NULL,
+                                     time             TIMESTAMP            NOT NULL,
+                                     answer           BOOLEAN              NOT NULL,
+                                     text             TEXT                         ,
+                                     file             BYTEA                        ); ''',
 
                        }
 
@@ -194,8 +207,8 @@ class Database:
     # add user
     def users_add(self, new_user):
         if self.users_get_one(new_user[0]) is None:
-            self.insert("INSERT INTO users(id, role, status, beer_amount, about_photo, info)  "
-                        "VALUES(%s, %s, %s, %s, %s, %s);", new_user)
+            self.insert("INSERT INTO users(id, role, status, beer_amount, about, photo, info)  "
+                        "VALUES(%s, %s, %s, %s, %s, %s, %s);", new_user)
 
     # edit users info
     def users_update_info(self, user_id, key, value):
@@ -219,7 +232,7 @@ class Database:
 
     # get duties by name
     def duties_get_by_name(self, duties_name):
-        return self.get_one("""SELECT * FROM duties WHERE name = %s;""", ('name', duties_name,))
+        return self.get_one("""SELECT * FROM duties WHERE name=%s;""", (duties_name,))
 
     # delete duties
     def duties_delete(self, duties_id):
@@ -242,11 +255,14 @@ class Database:
 
     # get roles by id
     def roles_get_one(self, roles_id):
-        return self.get_one("SELECT * FROM roles WHERE roles=%s;", (int(roles_id),))
+        return self.get_one("SELECT * FROM roles WHERE id=%s;", (int(roles_id),))
 
     # get roles by name
     def roles_get_by_name(self, role_name):
-        return self.get_one("""SELECT * FROM roles WHERE name = %s;""", ('name', role_name,))
+        return self.get_one("""SELECT * FROM roles WHERE name=%s;""", (role_name,))
+
+    def roles_get_by_duty(self, duty_id):
+        return self.get_all("""SELECT * FROM roles WHERE  WHERE %s=ANY(duties);""", (duty_id,))
 
     # delete roles
     def roles_delete(self, roles_id):
@@ -254,11 +270,64 @@ class Database:
 
     # add roles
     def roles_add(self, new_roles):
-        self.insert("INSERT INTO roles(name, duties, access_codes)  VALUES(%s, %s, %s);", new_roles)
+        self.insert("INSERT INTO roles(name, duties)  VALUES(%s, %s);", new_roles)
 
     # edit roles info
     def roles_update_info(self, roles_id, key, value):
         self.insert(f"UPDATE roles SET {key}=%s WHERE id=%s;", (value, roles_id))
+
+    # --------------------------------------
+    # access_codes
+
+    # get all access_codes
+    def access_codes_get_all(self):
+        return self.get_all('SELECT * FROM access_codes;')
+
+    # get access_codes by id
+    def access_codes_get_one(self, access_codes_id):
+        return self.get_one("SELECT * FROM access_codes WHERE id=%s;", (int(access_codes_id),))
+
+    # get access_codes by code
+    def access_codes_get_by_code(self, access_code):
+        return self.get_one("""SELECT * FROM access_codes WHERE code=%s;""", (access_code,))
+
+    def access_codes_get_by_role(self, duty_id):
+        return self.get_all("""SELECT * FROM access_codes WHERE role=%s;""", (duty_id,))
+
+    # delete access_codes
+    def access_codes_delete(self, access_codes_id):
+        self.insert("DELETE FROM access_codes WHERE id=%s;", (int(access_codes_id),))
+
+    # add access_codes
+    def access_codes_add(self, new_access_codes):
+        self.insert("INSERT INTO access_codes(role, code, one_time) VALUES(%s, %s, %s);", new_access_codes)
+
+    # --------------------------------------
+    # messages
+
+    # get all messages
+    def messages_get_all(self):
+        return self.get_all('SELECT * FROM messages;')
+
+    def messages_get_all_by_user(self, user_id):
+        return self.get_all('SELECT * FROM messages WHERE user_id=%s;', (user_id,))
+
+    # get messages by id
+    def messages_get_one(self, messages_id):
+        return self.get_one("SELECT * FROM messages WHERE id=%s;", (int(messages_id),))
+
+    # add messages
+    def messages_add(self, new_messages):
+        self.insert("INSERT INTO messages(user_id, time, answer, text, file)  "
+                    "VALUES(%s, %s, %s, %s, %s);", new_messages)
+
+    def unread_messages(self):
+        return self.get_all("SELECT id FROM users WHERE info ->> 'unread' = 'True';")
+
+    def users_get_with_dialogs(self):
+        messages = self.messages_get_all()
+        users_ids = list(set([i[1] for i in messages]))
+        return [self.users_get_one(i) for i in users_ids]
 
     # --------------------------------------------
     # EXCEL STATISTIC
@@ -267,20 +336,12 @@ class Database:
     def users_statistic(self):
         all_users = self.users_get_all()
         all_users.sort(key=lambda x: x[0])
-        users = {'ID': [], 'Имя и юзернейм': [], 'Баланс': [], 'Подписка': [], 'Рефералы': [], 'Телефон': []}
+        users = {'ID': [], 'Имя и юзернейм': []}
 
         for user in all_users:
             try:
                 users['ID'].append(user[0])
                 users['Имя и юзернейм'].append(get_name(user[-1]))
-                users['Баланс'].append(round(user[1], 2))
-                end = '---'
-                if user[2] is not None and user[2] > datetime.now():
-                    end = user[2] - datetime.now()
-                    end = str(end)[:str(end).rfind(".")]
-                users['Подписка'].append(end)
-                users['Рефералы'].append(' ,'.join(user[4]) if len(user[4]) > 0 else '-')
-                users['Телефон'].append('---')
 
             except Exception as e:
                 self.print_error(e)
@@ -292,7 +353,7 @@ class Database:
         data.to_excel(writer, sheet_name='База пользователей', index=False)
 
         for column in data:
-            column_width = max(data[column].astype(str).map(len).max(), len(column)) + 2
+            column_width = min(25, max(data[column].astype(str).map(len).max(), len(column)) + 2)
             col_idx = data.columns.get_loc(column)
             writer.sheets['База пользователей'].set_column(col_idx, col_idx, column_width)
 

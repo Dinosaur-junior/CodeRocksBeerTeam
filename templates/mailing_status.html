@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Статус рассылок
+{% endblock %}
+
+
+{% block body %}
+<br><br>
+<br><br>
+<div class="container" align="center">
+    {% if mails|length == 0 %}
+    <h1 align="center">Рассылки не найдены</h1>
+    {% else %}
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+
+
+        {% for mail in mails %}
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Рассылка</h4>
+                    </div>
+                    <div class="card-body">
+
+
+                        <ul>
+                            {% if mail[4] == 1 %}
+                            <li>Рассылка идет</li>
+                            {% else %}
+                            <li>Рассылка завершена</li>
+                            {% endif %}
+                            <li>Начало рассылки: {{mail[1]}}</li>
+
+                            <li>Доставлено: {{mail[2]}}</li>
+                            <li>Не доставлено: {{mail[3]}}</li>
+                            <li>Всего пользователей: {{mail[5]}}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {%endif%}
+
+</div>
+<br><br>
+<a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a>
+
+{% endblock %}

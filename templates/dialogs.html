@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Диалоги
+{% endblock %}
+
+
+{% block body %}
+
+<br><br>
+<div class="container">
+    {% if lu ==0 %}
+    <h3>Диалоги не найдены</h3>
+    <br>
+
+    {% else %}
+    <h4>У вас {{unread}} непрочитанных сообщений</h4>
+
+    <br>
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+        {% for user in users %}
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@{{user[-1]['username']}} --
+                            {% if user[-1]['first_name'] is not none %}
+                                {{user[-1]['first_name']}}
+                            {% endif %}
+
+                            {% if user[-1]['last_name'] is not none %}
+                                {{user[-1]['last_name']}}
+                            {% endif %}
+
+                            {% if user[-1]['unread'] != 'False' %}
+                            🔔
+                            {% endif %}
+
+                             </h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('dialog', user_id=user[0],) }}"
+                           class="btn btn-outline-dark">Перейти к диалогу</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+
+    {% endif %}
+
+</div>
+<a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a>
+<br><br>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Новая обязанность
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    {% with messages = get_flashed_messages(category_filter='add_duty') %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <br>
+    <div class="container">
+        <form method="post" enctype="multipart/form-data" action="/add_duty" class="form">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                {{ form.name(class_="form-control", placeholder_="Название") }}<br>
+                {{ form.about(class_="form-control", placeholder_="Описание") }}<br>
+                {{ form.question(class_="form-control", placeholder_="Вопрос") }}<br>
+                <ul>
+                    <li> {{ form.correct_answer(class_="form-control", placeholder_="Правильный ответ") }}<br></li>
+                    <li> {{ form.incorrect_answer_1(class_="form-control", placeholder_="Неправильный ответ №1") }}<br></li>
+                    <li> {{ form.incorrect_answer_2(class_="form-control", placeholder_="Неправильный ответ №2") }}<br></li>
+                    <li> {{ form.incorrect_answer_3(class_="form-control", placeholder_="Неправильный ответ №3") }}<br></li>
+                </ul>
+
+                {{ form.submit(class_="form-control btn-success") }}
+            </div>
+        </form>
+    </div>
+
+    <br>
+    <a href="/duties_setup" class="btn btn-outline-dark btn-lg"> К обязанностям </a><br>&nbsp;
+
+</div>
+{% endblock %}

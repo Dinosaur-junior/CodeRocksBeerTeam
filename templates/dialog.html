@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{user[1]}}
+{% endblock %}
+
+
+{% block body %}
+<br>
+<div class="container">
+    <h3 class="text-center" align="center"><strong>{{user[1]}}</strong></h3>
+    <hr>
+
+    <div class="container anyClass" id="block">
+
+        <div class="row">
+
+            {% for message in messages %}
+
+            {% if message[4] == True %}
+
+            <div class="d-flex flex-row justify-content-end mb-4">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {{message[3].strftime('%H:%M %d.%m.%Y')}}<br>
+                        </h6>
+                        <hr>
+                        <p class="card-text">{{message[5]}}</p>
+                        {% if message[6] is not none %}
+                        <div class="bg-image">
+                            <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть файл</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+
+            <div class="d-flex flex-row justify-content-start mb-4">
+                <div class="ms-3" style="border-radius: 15px;">
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                {{message[3].strftime('%H:%M %d.%m.%Y')}}<br>
+                                {{message[2]}}
+                            </h6>
+                            <hr>
+                            <p class="card-text">{{message[5]}}</p>
+                            {% if message[6] is not none %}
+                            <div class="bg-image">
+                                <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть
+                                    файл</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endif %}
+
+            {% endfor %}
+
+        </div>
+    </div>
+    <hr>
+
+    <div class="publisher bt-1 border-light">
+        <div class="container">
+            <form method="post" enctype="multipart/form-data"
+                  action="{{ url_for('dialog_answer', user_id=user[0], ) }}" class="form">
+                <div class="form-group">
+                     <textarea name="text" class="form-control" placeholder="Введите сообщение"
+                               required></textarea>
+                    <input type="file" name="file" class="form-control"  placeholder="Прикрепите файл">
+                    <br>
+                    <input type="submit" value="Отправить" class="form-control btn-outline-success">
+                </div>
+            </form>
+        </div>
+    </div>
+    <br>
+    <a href="/dialogs" class="btn btn-outline-dark btn-lg"> К диалогам </a>
+    <br>
+    <br>
+</div>
+
+<script type="text/javascript">
+  var block = document.getElementById("block");
+  block.scrollTop = block.scrollHeight;
+
+</script>
+
+{% endblock %}

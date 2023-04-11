@@ -7,6 +7,101 @@
 {% block body %}
 <div class="container">
     <br>
-    <h1>Тут будет админ панель</h1>
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Рассылка</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('mailing') }}" class="btn btn-outline-dark">Начать
+                            рассылку</a>
+                        <a href="{{ url_for('mailing_status') }}" class="btn btn-outline-dark">Статус
+                            рассылок</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Пользователи</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('users_base') }}" class="btn btn-outline-dark">Скачать базу
+                            пользователей</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Диалоги
+
+                            {% if unread !=0 %}
+                            🔔{{unread}}
+                            {% endif %}</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('dialogs') }}" class="btn btn-outline-dark">Перейти
+                            к диалогам</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Настройка должностей</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('roles_setup') }}" class="btn btn-outline-dark">Перейти
+                            к должностям</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Настройка обязанностей</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('duties_setup') }}" class="btn btn-outline-dark">Перейти
+                            к обязанностям</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Коды доступа</h4>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ url_for('access_codes') }}" class="btn btn-outline-dark">Перейти
+                            к кодам</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br><a href="/" class="btn btn-lg btn-outline-dark">На главную</a><br>&nbsp;
 </div>
 {% endblock %}

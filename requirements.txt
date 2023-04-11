@@ -6,3 +6,4 @@ psutil==5.9.4
 pandas==2.0.0
 XlsxWriter==3.0.9
 Flask==2.2.3
+WTForms==3.0.1

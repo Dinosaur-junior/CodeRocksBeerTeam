@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Коды доступа
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    {% if codes|length == 0 %}
+    <h1>Нет добавленных кодов</h1>
+    {% endif %}
+
+    <br>
+    <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a><br>&nbsp;
+
+</div>
+{% endblock %}
