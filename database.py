@@ -87,6 +87,11 @@ class Database:
                                      text             TEXT                         ,
                                      file             BYTEA                        ); ''',
 
+                       'jobs': '''CREATE TABLE IF NOT EXISTS jobs
+                                    (id              SERIAL PRIMARY KEY   NOT NULL,
+                                    name             TEXT                 NOT NULL,
+                                    photo            BYTEA                NOT NULL); ''',
+
                        }
 
     # print error
@@ -328,6 +333,26 @@ class Database:
         messages = self.messages_get_all()
         users_ids = list(set([i[1] for i in messages]))
         return [self.users_get_one(i) for i in users_ids]
+
+    # --------------------------------------
+    # jobs
+
+    # get all jobs
+    def jobs_get_all(self):
+        return self.get_all('SELECT * FROM jobs;')
+
+    # get jobs by id
+    def jobs_get_one(self, jobs_id):
+        return self.get_one("SELECT * FROM jobs WHERE id=%s;", (int(jobs_id),))
+
+    # add jobs
+    def jobs_add(self, new_jobs):
+        self.insert("INSERT INTO jobs(user_id, time, answer, text, file)  "
+                    "VALUES(%s, %s, %s, %s, %s);", new_jobs)
+
+    # delete jobs by id
+    def jobs_delete(self, jobs_id):
+        return self.get_one("DELETE * FROM jobs WHERE id=%s;", (int(jobs_id),))
 
     # --------------------------------------------
     # EXCEL STATISTIC

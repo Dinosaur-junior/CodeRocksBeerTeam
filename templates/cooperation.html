@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Вакансии
+{% endblock %}
+
+{% block body %}
+<br>
+<div class="container">
+    <br>
+    {% if workers|length == 0 %}
+    <h1 align="center"> Нет активных вакансий </h1>
+    {% endif %}
+    <br>
+
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+
+        {% for worker in workers %}
+        <div class="card-desk mb-3 text-container">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">{{worker}}</h4>
+                    </div>
+                    <img class="card-img-top" src="{{url_for('static', filename=images[worker])}}" alt="Card image cap">
+                    <div class="card-body">
+                        <p class="card-text">{{workers[worker]}}</p>
+                        <a href="https://t.me/beerCoders_codeRocks_bot" target="_blank" class="btn btn-outline-dark">Подать заявку</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="/" class="btn btn-lg btn-outline-dark">На главную</a><br>&nbsp;
+</div>
+
+{% endblock %}
