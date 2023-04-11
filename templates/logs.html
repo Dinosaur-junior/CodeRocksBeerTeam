@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Логи
+{% endblock %}
+
+{% block body %}
+<br>
+
+<div class="container">
+    <br><br>
+        <div class="prokrutka" style="height:57%;position:fixed;width:80%;left:10%;white-space:nowrap;" align="left" id="block">
+            {% for row in logs %}
+            {{row}}<br>
+            {% endfor %}
+        </div>
+
+    <div class="container" style="position: absolute;bottom: 10%;">
+        <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a><br>&nbsp;
+    </div>
+
+</div>
+
+<script type="text/javascript">
+  var block = document.getElementById("block");
+  block.scrollTop = block.scrollHeight;
+
+</script>
+{% endblock %}

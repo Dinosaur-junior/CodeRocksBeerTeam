@@ -721,6 +721,15 @@ def add_access_code():
     return redirect('/access_codes')
 
 
+@app.route('/logs', methods=['GET'])
+@requires_auth
+def logs():
+    file = open(os.path.join(path, 'log.txt'), 'r', encoding='utf-8')
+    data = file.read()
+    file.close()
+    return render_template('logs.html', logs=data.split('\n'))
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 # starting the web server
 if __name__ == '__main__':
