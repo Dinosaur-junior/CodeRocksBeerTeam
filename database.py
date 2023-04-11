@@ -90,6 +90,7 @@ class Database:
                        'jobs': '''CREATE TABLE IF NOT EXISTS jobs
                                     (id              SERIAL PRIMARY KEY   NOT NULL,
                                     name             TEXT                 NOT NULL,
+                                    description      TEXT                 NOT NULL,
                                     photo            BYTEA                NOT NULL); ''',
 
                        }
@@ -347,8 +348,7 @@ class Database:
 
     # add jobs
     def jobs_add(self, new_jobs):
-        self.insert("INSERT INTO jobs(user_id, time, answer, text, file)  "
-                    "VALUES(%s, %s, %s, %s, %s);", new_jobs)
+        self.insert("INSERT INTO jobs(name, description, photo) VALUES(%s, %s, %s);", new_jobs)
 
     # delete jobs by id
     def jobs_delete(self, jobs_id):
