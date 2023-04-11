@@ -28,11 +28,11 @@
                             </h6>
                             <hr>
                             <p class="card-text">{% if message[4] is not none%}
-                                    {{message[4]}}
-                                    {% endif%}</p>
+                                {{message[4]}}
+                                {% endif%}</p>
                             {% if message[5] is not none %}
                             <div class="bg-image">
-                                <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть
+                                <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}" target="_blank">Посмотреть
                                     файл</a>
                             </div>
                             {% endif %}
@@ -59,7 +59,7 @@
                                 </p>
                                 {% if message[5] is not none %}
                                 <div class="bg-image">
-                                    <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}">Посмотреть
+                                    <a href="{{ url_for('dialog_message_photo', message_id=message[0]) }}" target="_blank">Посмотреть
                                         файл</a>
                                 </div>
                                 {% endif %}
@@ -101,10 +101,6 @@
 <script type="text/javascript">
   var block = document.getElementById("block");
   block.scrollTop = block.scrollHeight;
-
-
-
-
 </script>
 
 {% endblock %}

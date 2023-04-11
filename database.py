@@ -328,7 +328,7 @@ class Database:
                     "VALUES(%s, %s, %s, %s, %s);", new_messages)
 
     def unread_messages(self):
-        return self.get_all("SELECT id FROM users WHERE info ->> 'unread'=%s;", ('True', ))
+        return self.get_all("SELECT id FROM users WHERE info ->> 'unread'=%s;", ('True',))
 
     def users_get_with_dialogs(self):
         messages = self.messages_get_all()
@@ -360,27 +360,41 @@ class Database:
 
     def jobs_update_info(self, jobs_id, key, value):
         self.insert(f"UPDATE jobs SET {key}=%s WHERE id=%s;", (value, jobs_id))
+
     # --------------------------------------------
     # EXCEL STATISTIC
 
-    # users(customers/executors) excel statistic
-    def users_statistic(self):
+    def users_base(self):
         all_users = self.users_get_all()
         all_users.sort(key=lambda x: x[0])
-        users = {'ID': [], 'Имя и юзернейм': []}
+        users = {'ID': [], 'Имя и юзернейм': [], 'Статус': [], 'Должность': [],
+                 'Кол-во пива': [], 'О себе': [], 'Фото профиля': []}
+        roles = {i[0]: i[1] for i in self.roles_get_all()}
 
         for user in all_users:
             try:
                 users['ID'].append(user[0])
                 users['Имя и юзернейм'].append(get_name(user[-1]))
+                users['Статус'].append(user[2])
+                users['Должность'].append(roles[user[1]] if user[1] in roles else '')
+                users['Кол-во пива'].append(str(user[3]))
+                users['О себе'].append(user[4] if user[4] is not None else '')
+                users['Фото профиля'].append('Да' if user[5] is not None else 'Нет')
 
             except Exception as e:
                 self.print_error(e)
 
+        return users
+
+    # users(customers/executors) excel statistic
+    def users_statistic(self):
+        users = self.users_base()
+
         data = pd.DataFrame(users)
 
         out = io.BytesIO()
-        writer = pd.ExcelWriter(out, engine='xlsxwriter')
+        writer = pd.ExcelWriter(out, engine='xlsxwriter', engine_kwargs={'options': {'strings_to_urls': False,
+                                                                                     'strings_to_formulas': False}})
         data.to_excel(writer, sheet_name='База пользователей', index=False)
 
         for column in data:
@@ -397,5 +411,5 @@ class Database:
 if __name__ == '__main__':
     database = Database()
     # database.drop_all()
-    #database.insert('drop table jobs')
+    # database.insert('drop table jobs')
     database.setup()

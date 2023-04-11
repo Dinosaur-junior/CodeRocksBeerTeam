@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Пользователи
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    {% if ul == 0 %}
+    <h1>В базе нет пользователей</h1>
+    {% endif %}
+
+
+    <div class="container" align="left">
+        <a class="btn btn-lg btn-outline-dark" href="/users_base">Скачать EXCEL таблицу</a>
+    </div>
+    <h1>Таблица пользователей</h1>
+    <br>
+
+    {% with messages = get_flashed_messages(category_filter='dismiss_user') %}
+    {% if messages %}
+    <br>
+    {% for message in messages %}
+    <div class="alert alert-success" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <br>
+
+    {% if ul > 0 %}
+    <div class="prokrutka" style="height:57%;position:fixed;width:80%;left:10%;" align="left" id="block">
+        <table width="100%" style="border: 1px solid black; border-collapse: collapse; width:100%" border="1">
+            <tr>
+                <th>ID</th>
+                <th>Имя и username</th>
+                <th>Статус</th>
+                <th>Должность</th>
+                <th>Кол-во пива</th>
+                <th>О себе</th>
+                <th>Фото профиля</th>
+            </tr>
+
+            {% for user in range(ul) %}
+
+            <tr>
+                <td>{{ users['ID'][user] }}</td>
+                <td>{{ users['Имя и юзернейм'][user] }}</td>
+                <td>{{ users['Статус'][user] }}</td>
+                <td>{% if users['Должность'][user]|length > 1 %}
+                    {{ users['Должность'][user] }} &nbsp;
+                    <button type="button" class="btn modalButton"
+                            data-name="{{url_for('dismiss_user', user_id=users['ID'][user])}} {{users['Имя и юзернейм'][user]}} users['ID'][user]"
+                            data-toggle="modal">❌
+                    </button>
+                    {% else %}
+                    &nbsp;
+                    {% endif %}
+                </td>
+                <td>{{ users['Кол-во пива'][user] }} шт.</td>
+                <td>{{ users['О себе'][user] }}</td>
+                <td> {% if users['Фото профиля'][user] == 'Да' %}
+                    <a target="_blank" href="{{url_for('users_photo', user_id=users['ID'][user]|int)}}">Посмотреть</a>
+                    {% else %}
+                    Нет
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <br>
+    <br>
+    <div class="container" style="position: absolute;bottom: 5%;">
+        <a href="/admin" class="btn btn-outline-dark btn-lg"> В админ панель </a><br>&nbsp;
+    </div>
+</div>
+
+<div class="modal fade" id="myModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение увольнения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы точно хотите уволить пользователя</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
+                <a type="button" class="btn btn-danger delete_button" href="">Уволить </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+$(document).ready(function(e) {
+    $('#myModal').modal({
+        backdrop: 'static',
+        keyboard: false,
+        show: false,
+    });
+
+    $(document).on("click", ".modalButton", function() {
+
+        var ClickedButton = $(this).data("name");
+        var domain = ClickedButton.split(' ').slice(1, ClickedButton.split(' ').length).join(' ');
+        var url = ClickedButton.split(' ')[0];
+
+        $(".modal-body").html("<p>" + "Вы точно хотите уволить пользователя " + domain + "?" + "</p>");
+        $("a.delete_button").attr("href", url)
+        $('#myModal').modal('show');
+    });
+
+    $(document).on("click", ".btn-close", function() {
+        $('#myModal').modal('hide');
+    });
+
+    $(document).on("click", ".btn_close_2", function() {
+        $('#myModal').modal('hide');
+    });
+
+});
+</script>
+{% endblock %}
