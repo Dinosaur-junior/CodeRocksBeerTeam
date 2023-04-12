@@ -7,7 +7,7 @@
 {% block body %}
 <div class="container">
     <br>
-    <h1>Обязанность {{role[1]}}</h1><br>
+    <h1>Должность {{role[1]}}</h1><br>
     {% with messages = get_flashed_messages(category_filter='add_role') %}
     {% if messages %}
     {% for message in messages %}
@@ -56,11 +56,11 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Подтверждение удаления обязанности</h5>
+                <h5 class="modal-title">Подтверждение удаления должности</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <p>Вы точно хотите удалить обязанность</p>
+                <p>Вы точно хотите удалить должность</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
@@ -82,7 +82,7 @@ $(document).ready(function(e) {
     $(document).on("click", ".modalButton", function() {
 
         var ClickedButton = $(this).data("name");
-        var domain = ClickedButton.split(' ')[1];
+        var domain = ClickedButton.split(' ').slice(1, ClickedButton.split(' ').length).join(' ');
         var url = ClickedButton.split(' ')[0];
 
         $(".modal-body").html("<p>" + "Вы точно хотите удалить должность " + domain + "?" + "</p>");

@@ -7,3 +7,5 @@ pandas==2.0.0
 XlsxWriter==3.0.9
 Flask==2.2.3
 WTForms==3.0.1
+fleep==1.0.1
+Flask-WTF==1.1.1

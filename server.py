@@ -146,6 +146,12 @@ def admin():
     return render_template('admin.html', unread=len(unread))
 
 
+@app.route('/users_page', methods=['GET'])
+@requires_auth
+def users_page():
+    return render_template('users.html', users=db.users_base(), ul=len(db.users_get_all()))
+
+
 # mailing statuses
 @app.route('/mailing_status', methods=['GET'])
 @requires_auth
@@ -236,8 +242,36 @@ def dialog_message_photo(message_id):
         f.write(file)
         f.seek(0)
         mime = fleep.get(file.tobytes()).mime[0]
-        return send_file(f, mimetype=mime, as_attachment=True,
-                         download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+@app.route('/users_photo/<int:user_id>', methods=['GET'])
+@requires_auth
+def users_photo(user_id):
+    try:
+        file = db.users_get_one(user_id)[5]
+        f = io.BytesIO()
+        f.write(file)
+        f.seek(0)
+        mime = fleep.get(file.tobytes()).mime[0]
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+@app.route('/dismiss_user/<int:user_id>', methods=['GET'])
+@requires_auth
+def dismiss_user(user_id):
+    try:
+        db.users_update_info(user_id, 'role', None)
+        flash(f'Пользователь {user_id} был уволен', 'dismiss_user')
+        return redirect('/users_page')
 
     except Exception as e:
         print_error(e)
@@ -397,14 +431,13 @@ def delete_jobs(job_id):
 def job_photo(job_id):
     global jobs
     try:
-        product = jobs[job_id]
-        while product is None:
-            product = db.jobs_get_one(job_id)
-        file = product[3]
+        job = jobs[job_id]
+        file = job[3]
         f = io.BytesIO()
         f.write(file)
         f.seek(0)
-        return send_file(f, as_attachment=True, download_name=f'photo{job_id}.jpg')
+        mime = fleep.get(file.tobytes()).mime[0]
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
 
     except Exception as e:
         print_error(e)
@@ -433,7 +466,7 @@ def edit_job(job_id):
             if description != job[2]:
                 db.jobs_update_info(job_id, 'description', description)
 
-            if file != job[3]:
+            if file != job[3] and len(file) > 10:
                 db.jobs_update_info(job_id, 'photo', file)
 
             flash('Должность изменена', 'edit_job_success')
@@ -688,11 +721,20 @@ def add_access_code():
     return redirect('/access_codes')
 
 
+@app.route('/logs', methods=['GET'])
+@requires_auth
+def logs():
+    file = open(os.path.join(path, 'log.txt'), 'r', encoding='utf-8')
+    data = file.read()
+    file.close()
+    return render_template('logs.html', logs=data.split('\n'))
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 # starting the web server
 if __name__ == '__main__':
     while True:
         try:
-            app.run(host='0.0.0.0', threaded=True, debug=True)
+            app.run(host='0.0.0.0', threaded=True)
         except Exception as error:
             print_error(error)

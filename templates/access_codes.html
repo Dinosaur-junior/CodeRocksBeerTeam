@@ -74,7 +74,7 @@
                     </td>
                 <td>
                     <button type="button" class="btn btn-lg btn-outline-danger modalButton"
-                            data-name="{{url_for('delete_access_code', code_id=code[0])}} {{code[2]}}"
+                            data-name="{{url_for('delete_access_code', code_id=code[0])}} {{code[2]}} для {{roles[code[1]]}}"
                             data-toggle="modal">🗑
                     </button>
                 </td>
@@ -94,13 +94,9 @@
 
 <script>
     function copyToClipboard(element) {
-          var $temp = $("<input>");
-          $("body").append($temp);
-          $temp.val($(element).text()).select();
-          document.execCommand("copy");
+         swal('код скопирован');
+         document.execCommand("copy");
     }
-
-
 </script>
 
 
@@ -134,10 +130,10 @@ $(document).ready(function(e) {
     $(document).on("click", ".modalButton", function() {
 
         var ClickedButton = $(this).data("name");
-        var domain = ClickedButton.split(' ')[1];
+        var domain = ClickedButton.split(' ').slice(1, ClickedButton.split(' ').length).join(' ');
         var url = ClickedButton.split(' ')[0];
 
-        $(".modal-body").html("<p>" + "Вы точно хотите удалить кода " + domain + "?" + "</p>");
+        $(".modal-body").html("<p>" + "Вы точно хотите удалить код " + domain + "?" + "</p>");
         $("a.delete_button").attr("href", url)
         $('#myModal').modal('show');
     });

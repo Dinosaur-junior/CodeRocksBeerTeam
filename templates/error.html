@@ -5,11 +5,12 @@ ERROR
 {% endblock %}
 
 {% block body %}
-<div class="counter">
+<div class="container">
     <br>
     <h1>Бывает :) Расслабьтесь и выпейте кружку пива</h1>
-    <img src="{{ url_for('static', filename='error.gif') }}" width="60%">
+    <img src="{{ url_for('static', filename='error.gif') }}" class="img-fluid photo">
     <br>
-    <a href="/" class="btn btn-lg btn-outline-dark">На главную</a><br>&nbsp;
+    <a href="/" class="btn btn-lg btn-outline-dark">На главную</a><br>
 </div>
+
 {% endblock %}

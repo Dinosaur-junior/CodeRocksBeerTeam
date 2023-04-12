@@ -90,7 +90,7 @@ $(document).ready(function(e) {
     $(document).on("click", ".modalButton", function() {
 
         var ClickedButton = $(this).data("name");
-        var domain = ClickedButton.split(' ')[1];
+        var domain = ClickedButton.split(' ').slice(1, ClickedButton.split(' ').length).join(' ');
         var url = ClickedButton.split(' ')[0];
 
         $(".modal-body").html("<p>" + "Вы точно хотите удалить обязанность " + domain + "?" + "</p>");
