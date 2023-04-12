@@ -1,5 +1,4 @@
 from telebot import types
-import random
 
 
 def create_keyboard(btn_lines):
@@ -37,14 +36,16 @@ def menu():
 def menu_reg():
     return create_keyboard([
         ['Частые вопросы', 'Мои коллеги'],
-        ['Мои обязанности'],
-        ['Пройти обучение'],
-        ['Связаться с админом'],
-        ['Информация о компании'],
-        ['Карта офиса'],
-        ['Мой профиль']
+        ['Мои обязанности', 'Пройти обучение'],
+        ['Информация о компании', 'Карта офиса'],
+        ['Связаться с админом', 'Мой профиль']
     ])
 
+def profile():
+    return create_keyboard([
+        ['Запросить выдачу пива', 'Моя карточка'],
+        ['<< Назад']
+    ])
 
 def back():
     return create_keyboard([
@@ -59,7 +60,7 @@ def start_btn():
     ])
 
 
-#--------------------------------------------------------------------
+# --------------------------------------------------------------------
 # Training
 
 def training_again():
@@ -70,27 +71,31 @@ def training_again():
 
 
 def duties_training(id, answers):
-    return create_inline_keyboard(
-        [[(answ_inc, f'duties_training|{id}|False')] for answ_inc in answers['incorrect']] + [[(answers['correct'], f'duties_training|{id}|True')]]
-    )
+    answers = [[(answ_inc, f'duties_training|{id}|False')] for answ_inc in answers['incorrect']] + [
+        [(answers['correct'], f'duties_training|{id}|True')]]
+    return create_inline_keyboard(answers)
 
 
 def duties_training_answ(id, answers, max_duties_cnt):
     if id + 1 == max_duties_cnt:
         return create_inline_keyboard(
-            [[('❌' + answ_inc, f'duties_training|{id}|')] for answ_inc in answers['incorrect']] + 
+            [[('❌' + answ_inc, f'duties_training|{id}|')] for answ_inc in answers['incorrect']] +
             [[('✅' + answers['correct'], f'duties_training|{id}|')]] +
             [[('🏁 Завершить обучение', f'duties_training|{id}|end')]]
         )
     else:
         return create_inline_keyboard(
-            [[('❌' + answ_inc, f'duties_training|{id}|')] for answ_inc in answers['incorrect']] + 
+            [[('❌' + answ_inc, f'duties_training|{id}|')] for answ_inc in answers['incorrect']] +
             [[('✅' + answers['correct'], f'duties_training|{id}|')]] +
             [[('Далее >>', f'duties_training|{id}|next')]]
         )
 
 
-#--------------------------------------------------------------------
+# --------------------------------------------------------------------
+def card_setup():
+    return create_inline_keyboard([
+        [('Изменить описание', 'card_setup|about'), ('Изменить фото', 'card_setup|photo')]
+    ])
 
 
 def cmp_info_game_1():
@@ -125,13 +130,15 @@ def cmp_info_game_2_answer():
 
 def cmp_info_game_3():
     return create_inline_keyboard([
-        [('Вишневое пиво', 'cmp_info_game|3|True'), ('Светлое пиво', 'cmp_info_game|3|True'), ('Темное пиво', 'cmp_info_game|3|True')],
+        [('Вишневое пиво', 'cmp_info_game|3|True'), ('Светлое пиво', 'cmp_info_game|3|True'),
+         ('Темное пиво', 'cmp_info_game|3|True')],
         [('Завершить игру', 'cmp_info_game|end')]
     ])
 
 
 def cmp_info_game_3_answer():
     return create_inline_keyboard([
-        [('✅ Вишневое пиво', 'cmp_info_game|3|'), ('✅ Светлое пиво', 'cmp_info_game|3|'), ('✅ Темное пиво', 'cmp_info_game|3|')],
+        [('✅ Вишневое пиво', 'cmp_info_game|3|'), ('✅ Светлое пиво', 'cmp_info_game|3|'),
+         ('✅ Темное пиво', 'cmp_info_game|3|')],
         [('Завершить игру', 'cmp_info_game|end')]
     ])

@@ -131,32 +131,6 @@ def func_chunks_generators(lst, n):
         yield lst[i: i + n]
 
 
-# unknown message
-# def unknown_message(message, keyboard=None):
-#     # start command
-#     if message.text == '/start':
-#         bot.clear_step_handler_by_chat_id(message.from_user.id)
-#         bot.send_message(message.from_user.id, 'Добро пожаловать')
-
-#     # unknown message
-#     else:
-#         bot.send_message(message.from_user.id, 'Неизвестная команда', reply_markup=keyboard)
-
-
-# anti sleep class
-# class AntiSleep(Thread):
-#     def __init__(self, bot_app):
-#         Thread.__init__(self)
-#         self.work = 0
-#         self.bot = bot_app
-
-#     def run(self):
-#         self.work = 1
-#         while self.work == 1:
-#             time.sleep(30)
-#             self.bot.get_me()
-
-
 # create random string
 def create_password():
     alphabet = string.ascii_letters + string.digits + string.punctuation
