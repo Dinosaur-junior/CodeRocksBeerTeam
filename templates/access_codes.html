@@ -71,7 +71,7 @@
                     {% else %}
                     Нет
                     {% endif %}
-                    </td>
+                </td>
                 <td>
                     <button type="button" class="btn btn-lg btn-outline-danger modalButton"
                             data-name="{{url_for('delete_access_code', code_id=code[0])}} {{code[2]}} для {{roles[code[1]]}}"
@@ -94,9 +94,16 @@
 
 <script>
     function copyToClipboard(element) {
-         swal('код скопирован');
-         document.execCommand("copy");
+         var text = $(element).text();
+         navigator.clipboard.writeText(text)
+            .then(() => {
+                    swal('код скопирован');
+                })
+            .catch(err => {
+                    swal('код скопирован');
+         });
     }
+
 </script>
 
 
@@ -147,6 +154,7 @@ $(document).ready(function(e) {
     });
 
 });
+
 
 
 
