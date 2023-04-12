@@ -480,10 +480,10 @@ class Bot:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Ваше пиво:',
                                                 reply_markup=keyboard.profile())
-                    self.bot.send_animation(chat_id=message.chat.id,
-                                            animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
-                    cur_user.beer_amount = 1
-                    db.users_update_info(cur_user.id, 'beer_amount', cur_user.ber_amount)
+                    msg = self.bot.send_animation(chat_id=message.chat.id,
+                                                  animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
+                    cur_user.beer_amount = -1
+                    db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
             elif message.text == 'Моя карточка':
@@ -525,6 +525,31 @@ class Bot:
                                             text='Текст обновлен',
                                             reply_markup=keyboard.profile())
                 self.bot.register_next_step_handler(msg, profile_main_page)
+
+        def edit_profile_photo(message):
+            cur_user = self.get_user(message.chat.id)
+
+            if message.text == '<< Назад':
+                msg = self.bot.send_message(chat_id=message.chat.id,
+                                            text='Ваш профиль:',
+                                            reply_markup=keyboard.profile())
+                self.bot.register_next_step_handler(msg, profile_main_page)
+
+            else:
+                if message.content_type != 'photo':
+                    msg = self.bot.send_message(chat_id=message.chat.id,
+                                                text='Вы отправили не фото')
+                    self.bot.register_next_step_handler(msg, edit_profile_photo)
+                else:
+                    file_id = message.photo[-1].file_id
+                    file_info = self.bot.get_file(file_id)
+                    downloaded_file = self.bot.download_file(file_info.file_path)
+                    cur_user.photo = downloaded_file
+                    db.users_update_info(cur_user.id, 'photo', downloaded_file)
+                    msg = self.bot.send_message(chat_id=message.chat.id,
+                                                text='Фото обновлено',
+                                                reply_markup=keyboard.profile())
+                    self.bot.register_next_step_handler(msg, profile_main_page)
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
@@ -644,49 +669,15 @@ class Bot:
                         db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
 
                 elif prefix == 'card_setup':
-                    if data == 'text':
+                    self.bot.clear_step_handler_by_chat_id(call.message.chat.id)
+                    if data == 'about':
                         msg = self.bot.send_message(chat_id=call.message.chat.id,
                                                     text='Введите новое описание',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, edit_profile_about)
 
                     elif data == 'photo':
-                        self.bot.send_message(chat_id=call.message.chat.id, text='Раздел находится в разработке')
-                elif prefix == 'often_questions':
-                    db_questions = db.questions_get_one(int(data))
-                    self.bot.send_message(chat_id=call.message.chat.id,
-                                          text=f'Вопрос: {db_questions[1]}\nОтвет: {db_questions[2]}',
-                                          reply_markup=keyboard.menu_reg())
-                elif prefix == 'nav_bar':
-                    db_users = db.users_get_all()
-
-                    if answ == 'next':
-                        if int(data) + 1 < len(db_users):
-                            id = int(data) + 1
-                        else:
-                            id = 0
-                    elif answ == 'back':
-                        if int(data) - 1 >= 0:
-                            id = int(data) - 1
-                        else:
-                            id = len(db_users) - 1
-                    else:
-                        return
-
-                    role = db.roles_get_one(db_users[id][1])[1]
-                    self.bot.delete_message(chat_id=call.message.chat.id,
-                                            message_id=call.message.id)
-                    if db_users[id][5] is not None:
-                        self.bot.send_photo(chat_id=call.message.chat.id, 
-                                            photo=db_users[id][5],
-                                            caption=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                            reply_markup=keyboard.nav_bar(id, len(db_users)),
-                                            parse_mode='HTML')
-                    else:
-                        self.bot.send_message(chat_id=call.message.chat.id,
-                                            text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                            reply_markup=keyboard.nav_bar(id, len(db_users)),
-                                            parse_mode='HTML')
+                        pass
 
             except Exception as e:
                 print_error(e)

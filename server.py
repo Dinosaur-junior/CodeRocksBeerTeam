@@ -200,6 +200,22 @@ def dismiss_user(user_id):
         return render_template('error.html')
 
 
+# edit users beer amount
+@app.route('/edit_user_beer/<int:user_id>', methods=['POST'])
+@requires_auth
+def edit_user_beer(user_id):
+    try:
+        form = request.form
+        if len(form['pivo']) > 0:
+            db.users_update_info(user_id, 'beer_amount', int(form['pivo']))
+            flash('Количество пива успешно изменено', 'edit_beer_amount')
+        return redirect('/users_page')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
 # --------------------------------------------------------------------------------------------------------------------
 # MAILING
 
@@ -860,6 +876,71 @@ def logs():
     data = file.read()
     file.close()
     return render_template('logs.html', logs=data.split('\n'))
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# PIC EDIT
+
+@app.route('/pics_edit', methods=['GET'])
+@requires_auth
+def pics_edit():
+    return render_template('pics_edit.html')
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# BEER GIF
+
+# get beer gif
+@app.route('/beer', methods=['GET'])
+def beer_gif():
+    try:
+        file = open(os.path.join(path, 'static', 'beer.gif'), 'rb')
+        return send_file(file, mimetype='image/gif', download_name='beer.gif')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+@app.route('/edit_beer', methods=['POST'])
+def edit_beer():
+    try:
+        file = request.files['pivo']
+        filename = 'beer.gif'
+        file.save(os.path.join(path, 'static', filename))
+        return redirect('/pics_edit')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# OFFICE MAP
+
+# get office map
+@app.route('/map', methods=['GET'])
+def map_pic():
+    try:
+        file = open(os.path.join(path, 'static', 'office_map.jpg'), 'rb')
+        return send_file(file, mimetype='image/jpg', download_name='office_map.jpg')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+@app.route('/edit_map', methods=['POST'])
+def edit_map():
+    try:
+        file = request.files['map']
+        filename = 'office_map.jpg'
+        file.save(os.path.join(path, 'static', filename))
+        return redirect('/pics_edit')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
 
 
 # ---------------------------------------------------------------------------------------------------------------------
