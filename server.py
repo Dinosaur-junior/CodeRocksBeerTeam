@@ -322,6 +322,10 @@ def dialog_answer(user_id):
             form = request.form
             form = dict(form)
             text = form['text'] if 'text' in form else None
+
+            text = f'Сообщение от админа\n\n' \
+                   f'{text}'
+
             if 'file' in request.files:
                 files = dict(request.files)
                 files = files['file']
