@@ -26,9 +26,21 @@
         {{message}}
     </div>
     {% endfor %}
+    <br>
     {% endif %}
     {% endwith %}
+
+    {% with messages = get_flashed_messages(category_filter='edit_beer_amount') %}
+    {% if messages %}
     <br>
+    {% for message in messages %}
+    <div class="alert alert-success" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    <br>
+    {% endif %}
+    {% endwith %}
 
     {% if ul > 0 %}
     <div class="prokrutka" style="height:57%;position:fixed;width:80%;left:10%;" align="left" id="block">
@@ -52,14 +64,19 @@
                 <td>{% if users['Должность'][user]|length > 1 %}
                     {{ users['Должность'][user] }} &nbsp;
                     <button type="button" class="btn modalButton"
-                            data-name="{{url_for('dismiss_user', user_id=users['ID'][user])}} {{users['Имя и юзернейм'][user]}} users['ID'][user]"
+                            data-name="{{url_for('dismiss_user', user_id=users['ID'][user])}} {{users['Имя и юзернейм'][user]}} {{users['ID'][user]}}"
                             data-toggle="modal">❌
                     </button>
                     {% else %}
                     &nbsp;
                     {% endif %}
                 </td>
-                <td>{{ users['Кол-во пива'][user] }} шт.</td>
+                <td>{{ users['Кол-во пива'][user] }} шт.
+                    <button type="button" class="btn editButton"
+                            data-name="{{users['ID'][user]}}"
+                            data-toggle="modal">✎
+                    </button>
+                </td>
                 <td>{{ users['О себе'][user] }}</td>
                 <td> {% if users['Фото профиля'][user] == 'Да' %}
                     <a target="_blank" href="{{url_for('users_photo', user_id=users['ID'][user]|int)}}">Посмотреть</a>
@@ -128,5 +145,52 @@ $(document).ready(function(e) {
     });
 
 });
+
+</script>
+
+<div class="modal fade" id="editModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменение количества пива</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы точно хотите уволить пользователя</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(e) {
+    $('#editModal').modal({
+        backdrop: 'static',
+        keyboard: false,
+        show: false,
+    });
+
+    $(document).on("click", ".editButton", function() {
+
+        var ClickedButton = $(this).data("name");
+        var user_id = ClickedButton;
+
+        $(".modal-body").html('<p>Введите сколько пива нужно пользователю ' + user_id+'</p><br> <form method="post" enctype="multipart/form-data" action="/edit_user_beer/' + user_id+ '" class="form"> <div class="form-group"> <input type="number"  id="pivo" name="pivo" class="form-control"><br> <button class="btn btn-success" type="submit">Обновить</button> </div> </form>');
+        $('#editModal').modal('show');
+    });
+
+    $(document).on("click", ".btn-close", function() {
+        $('#editModal').modal('hide');
+    });
+
+    $(document).on("click", ".btn_close_2", function() {
+        $('#editModal').modal('hide');
+    });
+
+});
+
 </script>
 {% endblock %}
