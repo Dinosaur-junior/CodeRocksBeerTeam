@@ -37,7 +37,7 @@ user_actions = dict()
 # Another classes
 
 class User:
-    def __init__(self, id, role=None, status='Пользователь', about=''):
+    def __init__(self, id, role=None, status=0, about=''):
         self.id = id
         self.role = role
         self.status = status
@@ -291,7 +291,7 @@ class Bot:
                         else:
                             self.bot.send_message(chat_id=message.chat.id,
                                                   text='За каждый правильный ответ, Вы будете получать пиво!')
-                            db_duties = db.duties_get_all()
+                            db_duties = db.get_duties_by_role_id(cur_user.role)
                             self.duties = [Duty(id=db_duty[0],
                                                 name=db_duty[1],
                                                 about=db_duty[2],
@@ -442,13 +442,15 @@ class Bot:
                 self.bot.register_next_step_handler(msg, start_cmp_info_game)
 
         def training_again(message):
+            cur_user = self.get_user(message.chat.id)
+
             if message.text == '<< Назад':
                 self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                       reply_markup=keyboard.menu_reg())
             elif message.text == 'Пройти еще раз':
                 self.bot.send_message(chat_id=message.chat.id,
                                       text='За каждый правильный ответ, Вы будете получать пиво!')
-                db_duties = db.duties_get_all()
+                db_duties = db.get_duties_by_role_id(cur_user.role)
                 self.duties = [Duty(id=db_duty[0],
                                     name=db_duty[1],
                                     about=db_duty[2],
