@@ -688,7 +688,6 @@ class Bot:
                                             reply_markup=keyboard.nav_bar(id, len(db_users)),
                                             parse_mode='HTML')
 
-
             except Exception as e:
                 print_error(e)
                 self.bot.send_message(call.from_user.id, 'Возникла ошибка')
