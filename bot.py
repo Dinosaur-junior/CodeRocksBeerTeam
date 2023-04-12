@@ -687,7 +687,7 @@ class Bot:
                                             text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                             reply_markup=keyboard.nav_bar(id, len(db_users)),
                                             parse_mode='HTML')
-
+#s
             except Exception as e:
                 print_error(e)
                 self.bot.send_message(call.from_user.id, 'Возникла ошибка')
