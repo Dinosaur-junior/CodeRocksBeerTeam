@@ -37,7 +37,7 @@ user_actions = dict()
 # Another classes
 
 class User:
-    def __init__(self, id, role=None, status=0, about=''):
+    def __init__(self, id, role=None, status='Только что зарегистрировался', about=''):
         self.id = id
         self.role = role
         self.status = status
@@ -151,11 +151,12 @@ class Bot:
 
                     if cur_user.role is None:
                         # if user not registered (no code)
-                        self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                        self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺\n\n'
+                                                                    'Запросите у админа код, чтобы получить доступ к боту',
                                               reply_markup=keyboard.menu())
                     else:
                         # if user registered (yes code)
-                        self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺🍺🍺',
+                        self.bot.send_message(message.from_user.id, 'Добро пожаловать в нашу пивоварню! 🍺',
                                               reply_markup=keyboard.menu_reg())
 
             # Error
@@ -204,20 +205,19 @@ class Bot:
 
                 if cur_user.role is None:
                     # if user not registered (no code)
-                    if message.text == '🐈 Ввести код 🐈':
+                    if message.text == '🐈 Ввести код':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите код:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_code)
-                    elif message.text == '📲 Связаться с админом 📲':
+                    elif message.text == '📲 Связаться с админом':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите свой вопрос админу:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_question)
-                    elif message.text == 'ℹ️ Посмотреть информацию о компании ℹ️':
+                    elif message.text == 'ℹ️ Посмотреть информацию о компании':
                         msg = self.bot.send_message(chat_id=message.chat.id,
-                                                    text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать:\n\n'
-                                                         'За каждый правильный ответ, Вы будете получать пиво!',
+                                                    text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать',
                                                     reply_markup=keyboard.start_btn())
                         self.bot.register_next_step_handler(msg, start_cmp_info_game)
                     else:
@@ -226,7 +226,7 @@ class Bot:
                                                     reply_markup=main_keyboard())
                 else:
                     # if user registered (yes code)
-                    if message.text == '❓ Частые вопросы ❓':
+                    if message.text == '❓ Частые вопросы':
                         db_questions = db.questions_get_all()
                         questions = [Question(id=db_question[0],
                                               question=db_question[1],
@@ -235,8 +235,10 @@ class Bot:
                                               text=f'Частые вопросы пользователей:',
                                               reply_markup=keyboard.often_questions(questions))
 
-                    elif message.text == '👨🏿‍💻 Мои коллеги 👨🏿‍💻':
+                    elif message.text == '👨🏿‍💻 Мои коллеги':
                         db_users = db.users_get_all()
+                        db_users = [i for i in db_users if i[1] is not None]
+                        db_users.sort(key=lambda x: x[0])
                         if message.chat.id not in user_actions:
                             user_actions[message.chat.id] = {'nav_bar_id': 0}
 
@@ -246,7 +248,7 @@ class Bot:
                             if db_users[id][5] is not None:
                                 self.bot.send_photo(chat_id=message.chat.id,
                                                     photo=db_users[id][5],
-                                                    caption=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                                    caption=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                     reply_markup=keyboard.nav_bar(
                                                         user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
                                                     parse_mode='HTML')
@@ -254,7 +256,7 @@ class Bot:
                             else:
                                 try:
                                     self.bot.send_message(chat_id=message.chat.id,
-                                                          text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                                          text=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                           reply_markup=keyboard.nav_bar(
                                                               user_actions[message.chat.id]['nav_bar_id'],
                                                               len(db_users)),
@@ -269,8 +271,7 @@ class Bot:
                                                               reply_markup=keyboard.menu_reg())
                                         break
 
-
-                    elif message.text == '❗️ Мои обязанности ❗️':
+                    elif message.text == '❗️ Мои обязанности':
                         if cur_user.info['training_done']:
                             duties = db.get_duties_by_role_id(cur_user.role)
                             duties = [i[1] for i in duties]
@@ -282,16 +283,16 @@ class Bot:
                                                   text='Для начала пройдите обучение, чтобы получить доступ к Вашми обязанностям!',
                                                   reply_markup=keyboard.menu_reg())
 
-                    elif message.text == '📚 Пройти обучение 📚':
+                    elif message.text == '📚 Пройти обучение':
                         if cur_user.info['training_done']:
                             msg = self.bot.send_message(chat_id=message.chat.id,
                                                         text='Вы уже прошли обучение.\nПройти снова?',
                                                         reply_markup=keyboard.training_again())
                             self.bot.register_next_step_handler(msg, training_again)
                         else:
-                            self.bot.send_message(chat_id=message.chat.id,
-                                                  text='За каждый правильный ответ, Вы будете получать пиво!')
+                            db.users_update_info(message.chat.id, 'status', 'Обучение обязанностям - страница 1')
                             db_duties = db.get_duties_by_role_id(cur_user.role)
+
                             self.duties = [Duty(id=db_duty[0],
                                                 name=db_duty[1],
                                                 about=db_duty[2],
@@ -300,25 +301,24 @@ class Bot:
                             self.bot.send_message(chat_id=message.chat.id,
                                                   text=f'Обязанность №1: {self.duties[0].name}\n\nОписание: {self.duties[0].about}\n\nВопрос: {self.duties[0].question}',
                                                   reply_markup=keyboard.duties_training(0, self.duties[0].answers))
-                    elif message.text == '📲 Связаться с админом 📲':
+                    elif message.text == '📲 Связаться с админом':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите свой вопрос админу:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_question)
 
-                    elif message.text == 'ℹ️ Информация о компании ℹ️':
+                    elif message.text == 'ℹ️ Информация о компании':
                         msg = self.bot.send_message(chat_id=message.chat.id,
-                                                    text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать:\n\n'
-                                                         'За каждый правильный ответ, Вы будете получать пиво!',
+                                                    text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать',
                                                     reply_markup=keyboard.start_btn())
                         self.bot.register_next_step_handler(msg, start_cmp_info_game)
 
-                    elif message.text == '🗺 Карта офиса 🗺':
+                    elif message.text == '🗺 Карта офиса':
                         self.bot.send_photo(chat_id=message.chat.id,
                                             photo=open(os.path.join(path, 'static', 'office_map.jpg'), 'rb'),
                                             caption='Не заблудитесь!')
 
-                    elif message.text == '👤 Мой профиль 👤':
+                    elif message.text == '👤 Мой профиль':
                         cur_user = db.users_get_one(message.chat.id)
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text=f'Ваш профиль:\n\n'
@@ -346,11 +346,11 @@ class Bot:
             if message.text == '<< Назад':
                 if cur_user.role is None:
                     # if user not registered (no code)
-                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                           reply_markup=keyboard.menu())
                 else:
                     # if user registered (yes code)
-                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                    self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                           reply_markup=keyboard.menu_reg())
             else:
                 db_code = db.access_codes_get_by_code(message.text)
@@ -394,13 +394,14 @@ class Bot:
                 cur_keyboard = keyboard.menu_reg
 
             if message.text == '<< Назад':
-                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                       reply_markup=cur_keyboard())
             elif message.content_type not in ['photo', 'text']:
                 msg = self.bot.send_message(chat_id=message.chat.id,
-                                            text='Вопрос может быть либо текстовый, либо картинка!\nПожалуйста, повторите свой запрос в корректном формате:',
+                                            text='Вопрос может быть либо текстовый, либо картинка!\n'
+                                                 'Пожалуйста, повторите свой запрос в корректном формате:',
                                             reply_markup=keyboard.back())
-                self.bot.register_next_step_handler(msg, enter_code)
+                self.bot.register_next_step_handler(msg, enter_question)
             else:
                 if message.content_type == 'photo':
                     file_info = self.bot.get_file(message.photo[-1].file_id)
@@ -429,9 +430,10 @@ class Bot:
                 cur_keyboard = keyboard.menu_reg
 
             if message.text == '<< Назад':
-                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                       reply_markup=cur_keyboard())
-            elif message.text == '▶️ СТАРТ ▶️':
+            elif message.text == '▶️ СТАРТ':
+                db.users_update_info(message.chat.id, 'status', 'Информация о компании - страница 1')
                 self.bot.send_message(chat_id=message.chat.id,
                                       text='Линейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?',
                                       reply_markup=keyboard.cmp_info_game_1())
@@ -445,11 +447,10 @@ class Bot:
             cur_user = self.get_user(message.chat.id)
 
             if message.text == '<< Назад':
-                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                       reply_markup=keyboard.menu_reg())
             elif message.text == 'Пройти еще раз':
-                self.bot.send_message(chat_id=message.chat.id,
-                                      text='За каждый правильный ответ, Вы будете получать пиво!')
+                db.users_update_info(message.chat.id, 'status', 'Обучение обязанностям - страница 1')
                 db_duties = db.get_duties_by_role_id(cur_user.role)
                 self.duties = [Duty(id=db_duty[0],
                                     name=db_duty[1],
@@ -470,9 +471,9 @@ class Bot:
             cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
-                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                       reply_markup=keyboard.menu_reg())
-            elif message.text == '🍺 Запросить выдачу пива 🍺':
+            elif message.text == '🍺 Запросить выдачу пива':
                 if cur_user[3] == 0:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='У Вас еще нет пива :(',
@@ -489,7 +490,7 @@ class Bot:
                     db.users_update_info(cur_user[0], 'beer_amount', cur_user[3] - 1)
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
-            elif message.text == '🖼 Моя карточка 🖼':
+            elif message.text == '🖼 Моя карточка':
 
                 if cur_user[4] == '' and cur_user[5] is None:
                     msg = self.bot.send_message(chat_id=message.chat.id,
@@ -513,7 +514,6 @@ class Bot:
                 self.bot.register_next_step_handler(msg, training_again)
 
         def edit_profile_about(message):
-            cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
                 msg = self.bot.send_message(chat_id=message.chat.id,
@@ -522,15 +522,13 @@ class Bot:
                 self.bot.register_next_step_handler(msg, profile_main_page)
 
             else:
-                cur_user[4] = message.text
-                db.users_update_info(cur_user[0], 'about', message.text)
+                db.users_update_info(message.chat.id, 'about', message.text)
                 msg = self.bot.send_message(chat_id=message.chat.id,
                                             text='Текст обновлен',
                                             reply_markup=keyboard.profile())
                 self.bot.register_next_step_handler(msg, profile_main_page)
 
         def edit_profile_photo(message):
-            cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
                 msg = self.bot.send_message(chat_id=message.chat.id,
@@ -547,8 +545,7 @@ class Bot:
                     file_id = message.photo[-1].file_id
                     file_info = self.bot.get_file(file_id)
                     downloaded_file = self.bot.download_file(file_info.file_path)
-                    cur_user[5] = downloaded_file
-                    db.users_update_info(cur_user[0], 'photo', downloaded_file)
+                    db.users_update_info(message.chat.id, 'photo', downloaded_file)
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Фото обновлено',
                                                 reply_markup=keyboard.profile())
@@ -570,14 +567,18 @@ class Bot:
 
                 if prefix == 'cmp_info_game':
                     if data == '1':
+                        db.users_update_info(call.message.chat.id, 'status', 'Информация о компании - страница 2')
                         # Вопрос 1
                         if answ == 'True':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
                                                        text='Вопрос 1/3\n\nЛинейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?\n\nОтвет: Действительно, наша компания производит 40 тонн пива каждый месяц, что позволяет многим людям пить пиво каждый день :)\n\nВам начислено +4 пива!',
                                                        reply_markup=keyboard.cmp_info_game_1_answer())
-                            cur_user.beer_amount += 4
+                            self.bot.answer_callback_query(call.id, 'Правильно!\n'
+                                                                    'Вы получили бутылку пива!', show_alert=True)
+                            cur_user.beer_amount += 1
                             db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+
                         elif answ == 'False':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
@@ -589,14 +590,19 @@ class Bot:
                                                        text='Вопрос 2/3\n\nВода - она есть везде, даже в пиве. Используемая в пивоварении вода должна быть качественной и чистой. От качества воды зависит вкус пива.\n\nВопрос: Как Вы думаете, какой процент от объема пива занимает вода?',
                                                        reply_markup=keyboard.cmp_info_game_2())
                     elif data == '2':
+                        db.users_update_info(call.message.chat.id, 'status', 'Информация о компании - страница 3')
                         # Вопрос 2
                         if answ == 'True':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
                                                        text='Вопрос 2/3\n\nВода - она есть везде, даже в пиве. Используемая в пивоварении вода должна быть качественной и чистой. От качества воды зависит вкус пива.\n\nВопрос: Как Вы думаете, какой процент от объема пива занимает вода?\n\nОтвет: Вы действительно правы, 95% - именно такое процентное содержание воды в нашем пиве. При изготовлении сортов нашего пива используется вода из подземных источников, расположенных на глубине до 200 метров\n\nВам начислено +4 пива!',
                                                        reply_markup=keyboard.cmp_info_game_2_answer())
-                            cur_user.beer_amount += 4
+
+                            self.bot.answer_callback_query(call.id, 'Правильно!\n'
+                                                                    'Вы получили бутылку пива!', show_alert=True)
+                            cur_user.beer_amount += 1
                             db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+
                         elif answ == 'False':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
@@ -608,14 +614,19 @@ class Bot:
                                                        text='Вопрос 3/3\n\nBeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша линейка товаров включает в себя пиво с яркими фруктовыми нотками, пиво с глубокими карамельными оттенками, пиво с яркими хмелевыми нотками и многое другое. Мы также предлагаем эксклюзивные сорта пива, которые доступны только в наших пивных барах.\n\nВопрос: Как Вы считаете, какое самое вкусное пиво?',
                                                        reply_markup=keyboard.cmp_info_game_3())
                     elif data == '3':
+                        db.users_update_info(call.message.chat.id, 'status', 'Информация о компании - страница 3')
                         # Вопрос 3
                         if answ == 'True':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
                                                        text='Вопрос 3/3\n\nBeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша линейка товаров включает в себя пиво с яркими фруктовыми нотками, пиво с глубокими карамельными оттенками, пиво с яркими хмелевыми нотками и многое другое. Мы также предлагаем эксклюзивные сорта пива, которые доступны только в наших пивных барах.\n\nВопрос: Как Вы считаете, какое самое вкусное пиво?\n\nОтвет: На самом деле это вопрос с подвохом, пиво - оно есть пиво, поэтому все виды пива - самые лучшие ;)\n\nВам начислено +4 пива!',
                                                        reply_markup=keyboard.cmp_info_game_3_answer())
-                            cur_user.beer_amount += 4
+
+                            self.bot.answer_callback_query(call.id, 'Правильно!\n'
+                                                                    'Вы получили бутылку пива!', show_alert=True)
+                            cur_user.beer_amount += 1
                             db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+
                         elif answ == 'False':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                        message_id=call.message.id,
@@ -628,6 +639,12 @@ class Bot:
                         #                            text=f'Молодцы, теперь Вы ознакомлены с нашей компанией!',
                         #                            reply_markup=keyboard.cmp_info_game_3())
                     elif data == 'end':
+                        db.users_update_info(call.message.chat.id, 'status', 'Информация о компании - завершил')
+                        cur_user.beer_amount += 5
+                        db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+                        self.bot.send_message(chat_id=call.message.chat.id, text='Подробнее ознакомиться с компанией '
+                                                                                 'вы можете на сайте https://dym-dino.ru\n\n'
+                                                                                 'А пока мы вам выдали 5 бутылок пива!')
                         # Завершить игру
                         cur_user = self.get_user(call.message.chat.id)
 
@@ -636,11 +653,11 @@ class Bot:
 
                         if cur_user.role is None:
                             # if user not registered (no code)
-                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
+                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺',
                                                   reply_markup=keyboard.menu())
                         else:
                             # if user registered (yes code)
-                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
+                            self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺',
                                                   reply_markup=keyboard.menu_reg())
                 elif prefix == 'duties_training':
                     if answ in ['True', 'False']:
@@ -650,8 +667,16 @@ class Bot:
                                                                                                       self.duties[
                                                                                                           int(data)].answers,
                                                                                                       len(self.duties)))
+                        if answ == 'True':
+                            self.bot.answer_callback_query(call.id, 'Правильно!\n'
+                                                                    'Вы получили бутылку пива!', show_alert=True)
+                            cur_user.beer_amount += 1
+                            db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+
                     elif answ == 'next':
                         next_id = int(data) + 1
+                        db.users_update_info(call.message.chat.id, 'status',
+                                             f'Обучение обязанностям - страница {next_id + 1}')
                         self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                    message_id=call.message.id,
                                                    text=f'Обязанность №{next_id + 1}: {self.duties[next_id].name}\n\nОписание: {self.duties[next_id].about}\n\nВопрос: {self.duties[next_id].question}',
@@ -660,6 +685,7 @@ class Bot:
                     elif answ == 'end':
                         cur_user = self.get_user(call.message.chat.id)
                         cur_user.info['training_done'] = True
+                        db.users_update_info(call.message.chat.id, 'status', 'Обучение обязанностям - завершено')
                         db.users_update_info(call.message.chat.id, 'info', json.dumps(cur_user.info))
 
                         self.bot.delete_message(chat_id=call.message.chat.id,
@@ -680,7 +706,11 @@ class Bot:
                         self.bot.register_next_step_handler(msg, edit_profile_about)
 
                     elif data == 'photo':
-                        self.bot.send_message(chat_id=call.message.chat.id, text='Раздел находится в разработке')
+                        msg = self.bot.send_message(chat_id=call.message.chat.id,
+                                                    text='Отправьте новое фото',
+                                                    reply_markup=keyboard.back())
+                        self.bot.register_next_step_handler(msg, edit_profile_photo)
+
                 elif prefix == 'often_questions':
                     db_questions = db.questions_get_one(int(data))
                     self.bot.send_message(chat_id=call.message.chat.id,
@@ -688,6 +718,8 @@ class Bot:
                                           reply_markup=keyboard.menu_reg())
                 elif prefix == 'nav_bar':
                     db_users = db.users_get_all()
+                    db_users = [i for i in db_users if i[1] is not None]
+                    db_users.sort(key=lambda x: x[0])
 
                     if answ == 'next':
                         if int(data) + 1 < len(db_users):
@@ -708,12 +740,12 @@ class Bot:
                     if db_users[id][5] is not None:
                         self.bot.send_photo(chat_id=call.message.chat.id,
                                             photo=db_users[id][5],
-                                            caption=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                            caption=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                             reply_markup=keyboard.nav_bar(id, len(db_users)),
                                             parse_mode='HTML')
                     else:
                         self.bot.send_message(chat_id=call.message.chat.id,
-                                              text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                              text=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                               reply_markup=keyboard.nav_bar(id, len(db_users)),
                                               parse_mode='HTML')
 

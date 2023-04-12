@@ -727,7 +727,7 @@ def delete_duty(duty_id):
     db.duties_delete(duty_id)
     roles = db.roles_get_by_duty(duty_id)
     for role in roles:
-        duties = roles[2]
+        duties = role[2]
         if duty_id in duties:
             duties.remove(duty_id)
             db.roles_update_info(role[0], 'duties', duties)
