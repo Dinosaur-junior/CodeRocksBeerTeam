@@ -429,6 +429,7 @@ class RoleForm(FlaskForm):
 @requires_auth
 def add_role():
     form = RoleForm()
+    form.duties.choices = [(i[0], i[1]) for i in db.duties_get_all()]
     if request.method == 'POST':
         try:
             name = form.name.data
@@ -457,6 +458,7 @@ def edit_role(role_id):
     role = db.roles_get_one(role_id)
     if request.method == 'POST':
         form = RoleForm()
+        form.duties.choices = [(i[0], i[1]) for i in db.duties_get_all()]
         try:
             name = form.name.data
             duties = [int(i) for i in form.duties.data]
@@ -481,6 +483,7 @@ def edit_role(role_id):
         return render_template('edit_role.html', form=form, role=role)
     else:
         form = RoleForm()
+        form.duties.choices = [(i[0], i[1]) for i in db.duties_get_all()]
         form.name.data = role[1]
         form.duties.data = role[2]
 
@@ -757,6 +760,7 @@ class AccessCodeForm(FlaskForm):
 @requires_auth
 def add_access_code():
     form = AccessCodeForm()
+    form.role.choices = [(i[0], i[1]) for i in [('', '---')] + db.roles_get_all()]
     if form.validate_on_submit():
         try:
             code = create_password()
@@ -948,6 +952,6 @@ def edit_map():
 if __name__ == '__main__':
     while True:
         try:
-            app.run(host='0.0.0.0', threaded=True, debug=True)
+            app.run(host='0.0.0.0', threaded=True)
         except Exception as error:
             print_error(error)

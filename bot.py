@@ -33,9 +33,6 @@ db = Database()
 user_actions = dict()
 
 
-# db.users_delete(1592698823)
-# print("DEL 1592698823")
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Another classes
 
@@ -231,10 +228,10 @@ class Bot:
                     # if user registered (yes code)
                     if message.text == 'Частые вопросы':
                         db_questions = db.questions_get_all()
-                        questions = [Question(id=db_question[0], 
+                        questions = [Question(id=db_question[0],
                                               question=db_question[1],
                                               answer=db_question[2]) for db_question in db_questions]
-                        self.bot.send_message(chat_id=message.chat.id, 
+                        self.bot.send_message(chat_id=message.chat.id,
                                               text=f'Частые вопросы пользователей:',
                                               reply_markup=keyboard.often_questions(questions))
 
@@ -242,33 +239,36 @@ class Bot:
                         db_users = db.users_get_all()
                         if message.chat.id not in user_actions:
                             user_actions[message.chat.id] = {'nav_bar_id': 0}
-                        
+
                         while user_actions[message.chat.id]['nav_bar_id'] < len(db_users):
                             id = user_actions[message.chat.id]['nav_bar_id']
                             role = db.roles_get_one(db_users[id][1])[1]
                             if db_users[id][5] is not None:
-                                self.bot.send_photo(chat_id=message.chat.id, 
+                                self.bot.send_photo(chat_id=message.chat.id,
                                                     photo=db_users[id][5],
                                                     caption=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                                    reply_markup=keyboard.nav_bar(user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
+                                                    reply_markup=keyboard.nav_bar(
+                                                        user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
                                                     parse_mode='HTML')
                                 break
                             else:
                                 try:
                                     self.bot.send_message(chat_id=message.chat.id,
-                                                        text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                                        reply_markup=keyboard.nav_bar(user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
-                                                        parse_mode='HTML')
+                                                          text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                                          reply_markup=keyboard.nav_bar(
+                                                              user_actions[message.chat.id]['nav_bar_id'],
+                                                              len(db_users)),
+                                                          parse_mode='HTML')
                                     break
                                 except:
                                     user_actions[message.chat.id]['nav_bar_id'] += 1
                                     if user_actions[message.chat.id]['nav_bar_id'] == len(db_users):
                                         user_actions.pop(message.chat.id)
                                         self.bot.send_message(chat_id=message.chat.id,
-                                                            text='Пользователей не найдено!',
-                                                            reply_markup=keyboard.menu_reg())
+                                                              text='Пользователей не найдено!',
+                                                              reply_markup=keyboard.menu_reg())
                                         break
-                                
+
 
                     elif message.text == 'Мои обязанности':
                         if cur_user.info['training_done']:
@@ -319,10 +319,11 @@ class Bot:
                                             caption='Не заблудитесь!')
 
                     elif message.text == 'Мой профиль':
+                        cur_user = db.users_get_one(message.chat.id)
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text=f'Ваш профиль:\n\n'
-                                                         f'Должность: {db.roles_get_one(cur_user.role)[1]}\n'
-                                                         f'Кол-во пива: {cur_user.beer_amount} шт.',
+                                                         f'Должность: {db.roles_get_one(cur_user[1])[1]}\n'
+                                                         f'Кол-во пива: {cur_user[3]} шт.',
                                                     reply_markup=keyboard.profile())
                         self.bot.register_next_step_handler(msg, profile_main_page)
 
@@ -464,13 +465,13 @@ class Bot:
 
         # users profile main page
         def profile_main_page(message):
-            cur_user = self.get_user(message.chat.id)
+            cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
                 self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                       reply_markup=keyboard.menu_reg())
             elif message.text == 'Запросить выдачу пива':
-                if cur_user.beer_amount == 0:
+                if cur_user[3] == 0:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='У Вас еще нет пива :(',
                                                 reply_markup=keyboard.profile())
@@ -482,25 +483,25 @@ class Bot:
                                                 reply_markup=keyboard.profile())
                     msg = self.bot.send_animation(chat_id=message.chat.id,
                                                   animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
-                    cur_user.beer_amount = -1
-                    db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
+
+                    db.users_update_info(cur_user[0], 'beer_amount', cur_user[3] - 1)
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
             elif message.text == 'Моя карточка':
 
-                if cur_user.about == '' and cur_user.photo is None:
+                if cur_user[4]== '' and cur_user[5] is None:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Ваша карточка не заполнена',
                                                 reply_markup=keyboard.card_setup())
-                elif cur_user.photo is None:
+                elif cur_user[5] is None:
                     msg = self.bot.send_message(chat_id=message.chat.id,
-                                                text=cur_user.about,
+                                                text=cur_user[4],
                                                 reply_markup=keyboard.card_setup())
 
                 else:
                     msg = self.bot.send_photo(chat_id=message.chat.id,
-                                              caption=cur_user.about,
-                                              photo=cur_user.photo,
+                                              caption=cur_user[4],
+                                              photo=cur_user[5],
                                               reply_markup=keyboard.card_setup())
                 self.bot.register_next_step_handler(msg, profile_main_page)
             else:
@@ -510,7 +511,7 @@ class Bot:
                 self.bot.register_next_step_handler(msg, training_again)
 
         def edit_profile_about(message):
-            cur_user = self.get_user(message.chat.id)
+            cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
                 msg = self.bot.send_message(chat_id=message.chat.id,
@@ -519,15 +520,15 @@ class Bot:
                 self.bot.register_next_step_handler(msg, profile_main_page)
 
             else:
-                cur_user.about = message.text
-                db.users_update_info(cur_user.id, 'about', message.text)
+                cur_user[4] = message.text
+                db.users_update_info(cur_user[0], 'about', message.text)
                 msg = self.bot.send_message(chat_id=message.chat.id,
                                             text='Текст обновлен',
                                             reply_markup=keyboard.profile())
                 self.bot.register_next_step_handler(msg, profile_main_page)
 
         def edit_profile_photo(message):
-            cur_user = self.get_user(message.chat.id)
+            cur_user = db.users_get_one(message.chat.id)
 
             if message.text == '<< Назад':
                 msg = self.bot.send_message(chat_id=message.chat.id,
@@ -544,8 +545,8 @@ class Bot:
                     file_id = message.photo[-1].file_id
                     file_info = self.bot.get_file(file_id)
                     downloaded_file = self.bot.download_file(file_info.file_path)
-                    cur_user.photo = downloaded_file
-                    db.users_update_info(cur_user.id, 'photo', downloaded_file)
+                    cur_user[5] = downloaded_file
+                    db.users_update_info(cur_user[0], 'photo', downloaded_file)
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Фото обновлено',
                                                 reply_markup=keyboard.profile())
@@ -703,16 +704,16 @@ class Bot:
                     self.bot.delete_message(chat_id=call.message.chat.id,
                                             message_id=call.message.id)
                     if db_users[id][5] is not None:
-                        self.bot.send_photo(chat_id=call.message.chat.id, 
+                        self.bot.send_photo(chat_id=call.message.chat.id,
                                             photo=db_users[id][5],
                                             caption=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                             reply_markup=keyboard.nav_bar(id, len(db_users)),
                                             parse_mode='HTML')
                     else:
                         self.bot.send_message(chat_id=call.message.chat.id,
-                                            text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                            reply_markup=keyboard.nav_bar(id, len(db_users)),
-                                            parse_mode='HTML')
+                                              text=f'Описание: {db_users[id][4]}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                              reply_markup=keyboard.nav_bar(id, len(db_users)),
+                                              parse_mode='HTML')
 
             except Exception as e:
                 print_error(e)
