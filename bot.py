@@ -204,17 +204,17 @@ class Bot:
 
                 if cur_user.role is None:
                     # if user not registered (no code)
-                    if message.text == 'Ввести код':
+                    if message.text == '🐈 Ввести код 🐈':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите код:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_code)
-                    elif message.text == 'Связаться с админом':
+                    elif message.text == '📲 Связаться с админом 📲':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите свой вопрос админу:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_question)
-                    elif message.text == 'Посмотреть информацию о компании':
+                    elif message.text == 'ℹ️ Посмотреть информацию о компании ℹ️':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать:\n\n'
                                                          'За каждый правильный ответ, Вы будете получать пиво!',
@@ -226,7 +226,7 @@ class Bot:
                                                     reply_markup=main_keyboard())
                 else:
                     # if user registered (yes code)
-                    if message.text == 'Частые вопросы':
+                    if message.text == '❓ Частые вопросы ❓':
                         db_questions = db.questions_get_all()
                         questions = [Question(id=db_question[0],
                                               question=db_question[1],
@@ -235,7 +235,7 @@ class Bot:
                                               text=f'Частые вопросы пользователей:',
                                               reply_markup=keyboard.often_questions(questions))
 
-                    elif message.text == 'Мои коллеги':
+                    elif message.text == '👨🏿‍💻 Мои коллеги 👨🏿‍💻':
                         db_users = db.users_get_all()
                         if message.chat.id not in user_actions:
                             user_actions[message.chat.id] = {'nav_bar_id': 0}
@@ -270,7 +270,7 @@ class Bot:
                                         break
 
 
-                    elif message.text == 'Мои обязанности':
+                    elif message.text == '❗️ Мои обязанности ❗️':
                         if cur_user.info['training_done']:
                             duties = db.get_duties_by_role_id(cur_user.role)
                             duties = [i[1] for i in duties]
@@ -282,7 +282,7 @@ class Bot:
                                                   text='Для начала пройдите обучение, чтобы получить доступ к Вашми обязанностям!',
                                                   reply_markup=keyboard.menu_reg())
 
-                    elif message.text == 'Пройти обучение':
+                    elif message.text == '📚 Пройти обучение 📚':
                         if cur_user.info['training_done']:
                             msg = self.bot.send_message(chat_id=message.chat.id,
                                                         text='Вы уже прошли обучение.\nПройти снова?',
@@ -300,25 +300,25 @@ class Bot:
                             self.bot.send_message(chat_id=message.chat.id,
                                                   text=f'Обязанность №1: {self.duties[0].name}\n\nОписание: {self.duties[0].about}\n\nВопрос: {self.duties[0].question}',
                                                   reply_markup=keyboard.duties_training(0, self.duties[0].answers))
-                    elif message.text == 'Связаться с админом':
+                    elif message.text == '📲 Связаться с админом 📲':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Введите свой вопрос админу:',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, enter_question)
 
-                    elif message.text == 'Информация о компании':
+                    elif message.text == 'ℹ️ Информация о компании ℹ️':
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text='Предлагаю Вам пройти эксурс по компании в игровой форме, нажмите СТАРТ, если хотите начать:\n\n'
                                                          'За каждый правильный ответ, Вы будете получать пиво!',
                                                     reply_markup=keyboard.start_btn())
                         self.bot.register_next_step_handler(msg, start_cmp_info_game)
 
-                    elif message.text == 'Карта офиса':
+                    elif message.text == '🗺 Карта офиса 🗺':
                         self.bot.send_photo(chat_id=message.chat.id,
                                             photo=open(os.path.join(path, 'static', 'office_map.jpg'), 'rb'),
                                             caption='Не заблудитесь!')
 
-                    elif message.text == 'Мой профиль':
+                    elif message.text == '👤 Мой профиль 👤':
                         cur_user = db.users_get_one(message.chat.id)
                         msg = self.bot.send_message(chat_id=message.chat.id,
                                                     text=f'Ваш профиль:\n\n'
