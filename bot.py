@@ -411,7 +411,7 @@ class Bot:
 
                 # Send request to admins
                 db.messages_add((message.chat.id, datetime.now(), False, message.text, question_data))
-                cur_user.info['unread'] = "False"
+                cur_user.info['unread'] = "True"
                 db.users_update_info(cur_user.id, "info", json.dumps(cur_user.info))
 
                 self.bot.send_message(chat_id=message.chat.id,
