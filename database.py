@@ -270,6 +270,9 @@ class Database:
     def roles_get_by_duty(self, duty_id):
         return self.get_all("""SELECT * FROM roles WHERE  WHERE %s=ANY(duties);""", (duty_id,))
 
+    def get_duties_by_role_id(self, role_id):
+        return [self.duties_get_one(i) for i in self.roles_get_one(role_id)[2]]
+
     # delete roles
     def roles_delete(self, roles_id):
         self.insert("DELETE FROM roles WHERE id=%s;", (int(roles_id),))
