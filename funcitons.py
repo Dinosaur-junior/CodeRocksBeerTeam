@@ -121,7 +121,7 @@ def get_name(user):
 # get user in dict
 def get_user(message):
     user = {'id': message.from_user.id, 'first_name': message.from_user.first_name,
-            'last_name': message.from_user.last_name, 'username': message.from_user.username}
+            'last_name': message.from_user.last_name, 'username': message.from_user.username, 'training_done': False}
     return user
 
 

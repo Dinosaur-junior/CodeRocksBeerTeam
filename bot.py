@@ -62,12 +62,12 @@ class Access_code:
 
 
 class Duty:
-    def __init__(self, id, name, about='', question=''):
+    def __init__(self, id, name, about='', question='', answers=dict()):
         self.id = id
         self.name = name
         self.about = about
         self.question = question
-        self.asnwers = list()
+        self.answers = answers
 
  
 class Message:
@@ -87,7 +87,8 @@ class Message:
 class Bot:
     def __init__(self):
         self.bot = TeleBot(token=BOT_TOKEN, threaded=True)
-        self.users = list() # List of all users
+        self.users = list() # List of all users : User
+        self.duties = list() # List of all duties : Duty
     
 
     # Get user by id 
@@ -206,9 +207,29 @@ class Bot:
                     elif message.text == 'Мои коллеги':
                         pass
                     elif message.text == 'Мои обязанности':
-                        pass
+                        if cur_user.info['training_done']:
+                            self.bot.send_message(chat_id=message.chat.id,
+                                                  text='Пей пиво!')
+                        else:
+                            self.bot.send_message(chat_id=message.chat.id,
+                                                  text='Для начала пройдите обучение, чтобы получить доступ к Вашми обязанностям!',
+                                                  reply_markup=keyboard.menu_reg())
                     elif message.text == 'Пройти обучение':
-                        pass
+                        if cur_user.info['training_done']:
+                            msg = self.bot.send_message(chat_id=message.chat.id,
+                                                  text='Вы уже прошли обучение.\nПройти снова?',
+                                                  reply_markup=keyboard.training_again())
+                            self.bot.register_next_step_handler(msg, training_again)
+                        else:
+                            db_duties = db.duties_get_all()
+                            self.duties = [Duty(id=db_duty[0], 
+                                                name=db_duty[1], 
+                                                about=db_duty[2], 
+                                                question=db_duty[3],
+                                                answers=db_duty[4]) for db_duty in db_duties]
+                            self.bot.send_message(chat_id=message.chat.id,
+                                                  text=f'Обязанность №1: {self.duties[0].name}\n\nОписание: {self.duties[0].about}\n\nВопрос: {self.duties[0].question}',
+                                                  reply_markup=keyboard.duties_training(0, self.duties[0].answers))
                     elif message.text == 'Связаться с админом':
                         pass
                     elif message.text == 'Информация о компании':
@@ -265,6 +286,10 @@ class Bot:
 
                     # update db
                     db.users_update_info(message.chat.id, "role", cur_user.role.id)
+
+                    # if one-time code
+                    if code.one_time:
+                        db.access_codes_delete(code.id)
                     
                     self.bot.send_message(chat_id=message.chat.id,
                                           text=f'Код успешно подтвержден!\nВам выдана роль: {cur_user.role.name}',
@@ -329,6 +354,27 @@ class Bot:
                                       text='Неизвестная команда!',
                                       reply_markup=keyboard.start_btn())
                 self.bot.register_next_step_handler(msg, start_cmp_info_game)
+            
+        
+        def training_again(message):
+            if message.text == '<< Назад':
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
+                                    reply_markup=keyboard.menu_reg())
+            elif message.text == 'Пройти еще раз':
+                db_duties = db.duties_get_all()
+                self.duties = [Duty(id=db_duty[0], 
+                                    name=db_duty[1], 
+                                    about=db_duty[2], 
+                                    question=db_duty[3],
+                                    answers=db_duty[4]) for db_duty in db_duties]
+                self.bot.send_message(chat_id=message.chat.id,
+                                        text=f'Обязанность №1: {self.duties[0].name}\n\nОписание: {self.duties[0].about}\n\nВопрос: {self.duties[0].question}',
+                                        reply_markup=keyboard.duties_training(0, self.duties[0].answers))
+            else:
+                msg = self.bot.send_message(chat_id=message.chat.id,
+                                      text='Неизвестная команда!',
+                                      reply_markup=keyboard.training_again())
+                self.bot.register_next_step_handler(msg, training_again)
         
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
@@ -361,32 +407,32 @@ class Bot:
                         elif answ == 'next':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                    message_id=call.message.id,
-                                                   text='Вопрос 2/3\n\n',
+                                                   text='Вопрос 2/3\n\nВода - она есть везде, даже в пиве. Используемая в пивоварении вода должна быть качественной и чистой. От качества воды зависит вкус пива.\n\nВопрос: Как Вы думаете, какой процент от объема пива занимает вода?',
                                                    reply_markup=keyboard.cmp_info_game_2())
                     elif data == '2':
                         # Вопрос 2
                         if answ == 'True':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                     message_id=call.message.id,
-                                                    text='Вопрос 2/3\n\nОтвет: ...\n\nВам начислено +4 пива!',
+                                                    text='Вопрос 2/3\n\nВода - она есть везде, даже в пиве. Используемая в пивоварении вода должна быть качественной и чистой. От качества воды зависит вкус пива.\n\nВопрос: Как Вы думаете, какой процент от объема пива занимает вода?\n\nОтвет: Вы действительно правы, 95% - именно такое процентное содержание воды в нашем пиве. При изготовлении сортов нашего пива используется вода из подземных источников, расположенных на глубине до 200 метров\n\nВам начислено +4 пива!',
                                                     reply_markup=keyboard.cmp_info_game_2_answer())
                             cur_user.beer_amount += 4
                         elif answ == 'False':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                     message_id=call.message.id,
-                                                    text='Вопрос 2/3\n\nОтвет: ...',
+                                                    text='Вопрос 2/3\n\nВода - она есть везде, даже в пиве. Используемая в пивоварении вода должна быть качественной и чистой. От качества воды зависит вкус пива.\n\nВопрос: Как Вы думаете, какой процент от объема пива занимает вода?\n\nОтвет: 95% - именно такое процентное содержание воды в нашем пиве. При изготовлении сортов нашего пива используется вода из подземных источников, расположенных на глубине до 200 метров',
                                                     reply_markup=keyboard.cmp_info_game_2_answer())
                         elif answ == 'next':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                    message_id=call.message.id,
-                                                   text='Вопрос 3/3\n\n',
+                                                   text='Вопрос 3/3\n\nBeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша линейка товаров включает в себя пиво с яркими фруктовыми нотками, пиво с глубокими карамельными оттенками, пиво с яркими хмелевыми нотками и многое другое. Мы также предлагаем эксклюзивные сорта пива, которые доступны только в наших пивных барах.\n\nВопрос: Как Вы считаете, какое самое вкусное пиво?',
                                                    reply_markup=keyboard.cmp_info_game_3())
                     elif data == '3':
                         # Вопрос 3
                         if answ == 'True':
                             self.bot.edit_message_text(chat_id=call.message.chat.id,
                                                     message_id=call.message.id,
-                                                    text='Вопрос 3/3\n\nОтвет: ...\n\nВам начислено +4 пива!',
+                                                    text='Вопрос 3/3\n\nBeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша линейка товаров включает в себя пиво с яркими фруктовыми нотками, пиво с глубокими карамельными оттенками, пиво с яркими хмелевыми нотками и многое другое. Мы также предлагаем эксклюзивные сорта пива, которые доступны только в наших пивных барах.\n\nВопрос: Как Вы считаете, какое самое вкусное пиво?\n\nОтвет: На самом деле это вопрос с подвохом, пиво - оно есть пиво, поэтому все виды пива - самые лучшие ;)\n\nВам начислено +4 пива!',
                                                     reply_markup=keyboard.cmp_info_game_3_answer())
                             cur_user.beer_amount += 4
                         elif answ == 'False':
@@ -414,7 +460,28 @@ class Bot:
                             # if user registered (yes code)
                             self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
                                                 reply_markup=keyboard.menu_reg())
+                elif prefix == 'duties_training':
+                    if answ in ['True', 'False']:
+                        self.bot.edit_message_reply_markup(chat_id=call.message.chat.id,
+                                                            message_id=call.message.id,
+                                                            reply_markup=keyboard.duties_training_answ(int(data), self.duties[int(data)].answers, len(self.duties)))
+                    elif answ == 'next':
+                        next_id = int(data) + 1
+                        self.bot.edit_message_text(chat_id=call.message.chat.id,
+                                                   message_id=call.message.id,
+                                                   text=f'Обязанность №{next_id + 1}: {self.duties[next_id].name}\n\nОписание: {self.duties[next_id].about}\n\nВопрос: {self.duties[next_id].question}',
+                                                   reply_markup=keyboard.duties_training(next_id, self.duties[next_id].answers))
+                    elif answ == 'end':
+                        cur_user = self.get_user(call.message.chat.id)
+                        cur_user.info['training_done'] = True
+                        db.users_update_info(call.message.chat.id, 'info', json.dumps(cur_user.info))
+
+                        self.bot.delete_message(chat_id=call.message.chat.id,
+                                                message_id=call.message.id)
                         
+                        self.bot.send_message(call.message.chat.id, 'Главное меню! 🍺🍺🍺',
+                                            reply_markup=keyboard.menu_reg())
+
             except Exception as e:
                 print_error(e)
                 self.bot.send_message(call.from_user.id, 'Возникла ошибка')

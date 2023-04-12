@@ -73,3 +73,46 @@
 21:33:37 11.04.2023 -- Бот запущен!
 21:34:12 11.04.2023 -- Бот запущен!
 21:34:22 11.04.2023 -- Бот запущен!
+21:41:05 11.04.2023 -- Бот запущен!
+23:38:47 11.04.2023 -- Бот запущен!
+02:13:09 12.04.2023 -- Бот запущен!
+02:13:35 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 216, in text_message() -- 'training_done'
+02:14:11 12.04.2023 -- Бот запущен!
+02:14:17 12.04.2023 -- Бот запущен!
+02:24:31 12.04.2023 -- Бот запущен!
+02:24:40 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 231, in text_message() -- can only concatenate list (not "tuple") to list
+02:24:57 12.04.2023 -- Бот запущен!
+02:31:06 12.04.2023 -- Бот запущен!
+02:31:20 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 461, in handle_query() -- list indices must be integers or slices, not str
+02:31:58 12.04.2023 -- Бот запущен!
+02:32:21 12.04.2023 -- Бот запущен!
+02:32:26 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 461, in handle_query() -- 'Duty' object has no attribute 'answers'
+02:33:10 12.04.2023 -- Бот запущен!
+02:33:23 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 459, in handle_query() -- A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+02:34:05 12.04.2023 -- Бот запущен!
+02:35:32 12.04.2023 -- Бот запущен!
+02:36:07 12.04.2023 -- Бот запущен!
+02:38:11 12.04.2023 -- Бот запущен!
+02:38:28 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 467, in handle_query() -- list index out of range
+02:42:42 12.04.2023 -- Бот запущен!
+02:42:57 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 467, in handle_query() -- list index out of range
+02:43:07 12.04.2023 -- Бот запущен!
+02:43:42 12.04.2023 -- Бот запущен!
+02:45:14 12.04.2023 -- Бот запущен!
+02:45:59 12.04.2023 -- Бот запущен!
+02:47:12 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 218, in text_message() -- 'training_done'
+02:47:17 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 218, in text_message() -- 'training_done'
+02:53:29 12.04.2023 -- Бот запущен!
+02:53:54 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 131, in start_msg() -- 'NoneType' object has no attribute 'id'
+02:54:59 12.04.2023 -- Бот запущен!
+03:01:08 12.04.2023 -- Бот запущен!
+03:04:00 12.04.2023 -- Бот запущен!
+03:04:04 12.04.2023 -- Бот запущен!
+03:04:32 12.04.2023 -- Бот запущен!
+03:05:10 12.04.2023 -- Бот запущен!
+03:05:17 12.04.2023 -- Бот запущен!
+03:05:20 12.04.2023 -- Бот запущен!
+03:06:52 12.04.2023 -- Бот запущен!
+03:08:17 12.04.2023 -- Бот запущен!
+03:08:29 12.04.2023 -- c:\Users\m1xtu\OneDrive\Рабочий стол\Beer_hackaton\CodeRocksBeerTeam\bot.py, line 467, in handle_query() -- unsupported operand type(s) for +: 'NoneType' and 'list'
+03:09:49 12.04.2023 -- Бот запущен!
