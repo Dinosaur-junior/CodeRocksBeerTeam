@@ -93,6 +93,11 @@ class Database:
                                     description      TEXT                 NOT NULL,
                                     photo            BYTEA                NOT NULL); ''',
 
+                       'questions': '''CREATE TABLE IF NOT EXISTS questions
+                                    (id              SERIAL PRIMARY KEY   NOT NULL,
+                                    question         TEXT                 NOT NULL,
+                                    answer           TEXT                 NOT NULL); ''',
+
                        }
 
     # print error
@@ -364,6 +369,31 @@ class Database:
     def jobs_update_info(self, jobs_id, key, value):
         self.insert(f"UPDATE jobs SET {key}=%s WHERE id=%s;", (value, jobs_id))
 
+    # --------------------------------------
+    # questions
+
+    # get all questions
+    def questions_get_all(self):
+        return self.get_all('SELECT * FROM questions;')
+
+    # get jobs by id
+    def questions_get_one(self, questions_id):
+        return self.get_one("SELECT * FROM questions WHERE id=%s;", (int(questions_id),))
+
+    def questions_get_by_question(self, questions_name):
+        return self.get_one("SELECT * FROM questions WHERE question=%s;", (questions_name,))
+
+    # add questions
+    def questions_add(self, new_questions):
+        self.insert("INSERT INTO questions(question, answer) VALUES(%s, %s);", new_questions)
+
+    # delete questions by id
+    def questions_delete(self, questions_id):
+        return self.insert("DELETE FROM questions WHERE id=%s;", (int(questions_id),))
+
+    def questions_update_info(self, questions_id, key, value):
+        self.insert(f"UPDATE questions SET {key}=%s WHERE id=%s;", (value, questions_id))
+
     # --------------------------------------------
     # EXCEL STATISTIC
 
@@ -414,5 +444,4 @@ class Database:
 if __name__ == '__main__':
     database = Database()
     # database.drop_all()
-    # database.insert('drop table jobs')
     database.setup()

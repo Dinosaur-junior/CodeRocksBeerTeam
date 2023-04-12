@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}
-{{job[1]}}
+{{ question[1] }}
 {% endblock %}
 
 {% block body %}
 <div class="container">
     <br>
-    <h1>Вакансия {{job[1]}}</h1><br>
-    {% with messages = get_flashed_messages(category_filter='add_job') %}
+    <h1>Вопрос {{ question[1] }}</h1><br>
+    {% with messages = get_flashed_messages(category_filter='add_questions') %}
     {% if messages %}
     {% for message in messages %}
     <div class="alert alert-danger" role="alert">
@@ -18,7 +18,7 @@
     {% endif %}
     {% endwith %}
 
-    {% with messages = get_flashed_messages(category_filter='edit_job_success') %}
+    {% with messages = get_flashed_messages(category_filter='edit_questions_success') %}
     {% if messages %}
     {% for message in messages %}
     <div class="alert alert-success" role="alert">
@@ -28,14 +28,14 @@
     {% endif %}
     {% endwith %}
     <br>
+
     <div class="container">
-        <form method="post" enctype="multipart/form-data" action="{{url_for('edit_job', job_id=job[0])}}"
+        <form method="post" enctype="multipart/form-data" action="{{url_for('edit_questions', questions_id=question[0]) }}"
               class="form">
             <div class="form-group">
                 {{ form.hidden_tag() }}
-                {{ form.name(class_="form-control", placeholder_="Название", required=False) }}<br>
-                {{ form.description(class_="form-control", placeholder_="Описание", required=False) }}<br>
-                {{ form.file(class_="form-control", placeholder_="Вопрос", required=False, accept="image/*") }}<br>
+                {{ form.question(class_="form-control", placeholder_="Вопрос", required=False) }}<br>
+                {{ form.answer(class_="form-control", placeholder_="Ответ", required=False) }}<br>
 
                 {{ form.submit(class_="form-control btn-success", value="Обновить") }}
             </div>
@@ -43,11 +43,12 @@
     </div>
 
     <button type="button" class="btn btn-lg btn-outline-danger modalButton"
-            data-name="{{url_for('delete_jobs', job_id=job[0])}} {{job[1]}}"
+            data-name="{{url_for('delete_questions', questions_id=question[0]) }} {{ question[1] }}"
             data-toggle="modal">Удалить 🗑
     </button>
+
     <br><br>
-    <a href="/jobs_setup" class="btn btn-outline-dark btn-lg"> К вакансиям </a><br>&nbsp;
+    <a href="/questions_setup" class="btn btn-outline-dark btn-lg"> К вопросам </a><br>&nbsp;
 
 </div>
 
@@ -55,11 +56,11 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Подтверждение удаления вакансии</h5>
+                <h5 class="modal-title">Подтверждение удаления вопроса</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <p>Вы точно хотите удалить обязанность</p>
+                <p>Вы точно хотите удалить вопрос</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn_close_2" data-bs-dismiss="modal">Отменить</button>
@@ -84,7 +85,7 @@ $(document).ready(function(e) {
         var domain = ClickedButton.split(' ').slice(1, ClickedButton.split(' ').length).join(' ');
         var url = ClickedButton.split(' ')[0];
 
-        $(".modal-body").html("<p>" + "Вы точно хотите удалить вакансию " + domain + "?" + "</p>");
+        $(".modal-body").html("<p>" + "Вы точно хотите удалить вопрос " + domain + "?" + "</p>");
         $("a.delete_button").attr("href", url)
         $('#myModal').modal('show');
     });

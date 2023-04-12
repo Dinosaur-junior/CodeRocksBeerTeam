@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Новый вопрос
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    {% with messages = get_flashed_messages(category_filter='add_questions') %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{message}}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <br>
+    <div class="container">
+        <form method="post" enctype="multipart/form-data" action="/add_questions" class="form">
+            <div class="form-group">
+                {{ form.hidden_tag() }}
+                {{ form.question(class_="form-control", placeholder_="Вопрос") }}<br>
+                {{ form.answer(class_="form-control", placeholder_="Ответ") }}<br>
+
+                {{ form.submit(class_="form-control btn-success") }}
+            </div>
+        </form>
+    </div>
+
+    <br>
+    <a href="/jquestions_setup" class="btn btn-outline-dark btn-lg"> К вопросам </a><br>&nbsp;
+
+</div>
+{% endblock %}

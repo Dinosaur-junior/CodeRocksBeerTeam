@@ -23,7 +23,7 @@
                 {{ form.hidden_tag() }}
                 {{ form.name(class_="form-control", placeholder_="Название") }}<br>
                 {{ form.description(class_="form-control", placeholder_="Описание") }}<br>
-                {{ form.file(class_="form-control", placeholder_="Вопрос") }}<br>
+                {{ form.file(class_="form-control", placeholder_="Вопрос", accept="image/*") }}<br>
 
 
                 {{ form.submit(class_="form-control btn-success") }}

@@ -146,11 +146,62 @@ def admin():
     return render_template('admin.html', unread=len(unread))
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# USERS
+
 @app.route('/users_page', methods=['GET'])
 @requires_auth
 def users_page():
     return render_template('users.html', users=db.users_base(), ul=len(db.users_get_all()))
 
+
+# get users base
+@app.route('/users_base/', methods=['GET'])
+@requires_auth
+def users_base():
+    try:
+        file = db.users_statistic()
+        return send_file(file, as_attachment=True, download_name='База пользователей.xlsx',
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# get users photo
+@app.route('/users_photo/<int:user_id>', methods=['GET'])
+@requires_auth
+def users_photo(user_id):
+    try:
+        file = db.users_get_one(user_id)[5]
+        f = io.BytesIO()
+        f.write(file)
+        f.seek(0)
+        mime = fleep.get(file.tobytes()).mime[0]
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# dismiss user from job
+@app.route('/dismiss_user/<int:user_id>', methods=['GET'])
+@requires_auth
+def dismiss_user(user_id):
+    try:
+        db.users_update_info(user_id, 'role', None)
+        flash(f'Пользователь {user_id} был уволен', 'dismiss_user')
+        return redirect('/users_page')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# MAILING
 
 # mailing statuses
 @app.route('/mailing_status', methods=['GET'])
@@ -218,64 +269,8 @@ def mailing():
         return render_template('error.html')
 
 
-# get users base
-@app.route('/users_base/', methods=['GET'])
-@requires_auth
-def users_base():
-    try:
-        file = db.users_statistic()
-        return send_file(file, as_attachment=True, download_name='База пользователей.xlsx',
-                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-    except Exception as e:
-        print_error(e)
-        return render_template('error.html')
-
-
-# dialog attachment
-@app.route('/dialog_message_photo/<int:message_id>', methods=['GET'])
-@requires_auth
-def dialog_message_photo(message_id):
-    try:
-        file = db.messages_get_one(message_id)[5]
-        f = io.BytesIO()
-        f.write(file)
-        f.seek(0)
-        mime = fleep.get(file.tobytes()).mime[0]
-        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
-
-    except Exception as e:
-        print_error(e)
-        return render_template('error.html')
-
-
-@app.route('/users_photo/<int:user_id>', methods=['GET'])
-@requires_auth
-def users_photo(user_id):
-    try:
-        file = db.users_get_one(user_id)[5]
-        f = io.BytesIO()
-        f.write(file)
-        f.seek(0)
-        mime = fleep.get(file.tobytes()).mime[0]
-        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
-
-    except Exception as e:
-        print_error(e)
-        return render_template('error.html')
-
-
-@app.route('/dismiss_user/<int:user_id>', methods=['GET'])
-@requires_auth
-def dismiss_user(user_id):
-    try:
-        db.users_update_info(user_id, 'role', None)
-        flash(f'Пользователь {user_id} был уволен', 'dismiss_user')
-        return redirect('/users_page')
-
-    except Exception as e:
-        print_error(e)
-        return render_template('error.html')
+# --------------------------------------------------------------------------------------------------------------------
+# DIALOGS
 
 
 # dialogs list page
@@ -307,6 +302,23 @@ def dialog(user_id):
         users_message = db.messages_get_all_by_user(user_id)
 
         return render_template('dialog.html', user=user, messages=users_message)
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# dialog attachment
+@app.route('/dialog_message_photo/<int:message_id>', methods=['GET'])
+@requires_auth
+def dialog_message_photo(message_id):
+    try:
+        file = db.messages_get_one(message_id)[5]
+        f = io.BytesIO()
+        f.write(file)
+        f.seek(0)
+        mime = fleep.get(file.tobytes()).mime[0]
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
 
     except Exception as e:
         print_error(e)
@@ -374,6 +386,9 @@ def dialog_answer(user_id):
         return render_template('error.html')
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# ROLES
+
 # setup roles
 @app.route('/roles_setup', methods=['GET'])
 @requires_auth
@@ -381,119 +396,12 @@ def roles_setup():
     return render_template('roles_setup.html', roles=db.roles_get_all())
 
 
-@app.route('/jobs_setup', methods=['GET'])
-@requires_auth
-def jobs_setup():
-    global jobs
-    all_jobs = db.jobs_get_all()
-    jobs = {i[0]: i for i in all_jobs}
-    return render_template('jobs_setup.html', jobs=all_jobs)
-
-
-class JobForm(FlaskForm):
-    name = StringField("Название", validators=[DataRequired()])
-    description = TextAreaField("Описание", validators=[DataRequired()])
-    file = FileField("Фото", validators=[DataRequired()])
-    submit = SubmitField("Добавить")
-
-
-# add role
-@app.route('/add_job', methods=['GET', 'POST'])
-@requires_auth
-def add_job():
-    form = JobForm()
-    if request.method == 'POST':
-        try:
-            name = form.name.data
-            description = form.description.data
-            file = form.file.data
-            job = db.jobs_get_by_name(name)
-            if job is not None:
-                flash('Должность с таким именем уже существует', 'add_job')
-                return render_template('add_job.html', form=form)
-
-            else:
-                new_job = (name, description, file.read())
-                db.jobs_add(new_job)
-            return redirect('/jobs_setup')
-        except Exception as e:
-            print_error(e)
-            return render_template('add_job.html', form=form)
-
-    else:
-        return render_template('add_job.html', form=form)
-
-
-@app.route('/delete_jobs/<int:job_id>', methods=['GET'])
-@requires_auth
-def delete_jobs(job_id):
-    db.jobs_delete(job_id)
-    return redirect('/jobs_setup')
-
-
-@app.route('/job_photo/<int:job_id>', methods=['GET'])
-def job_photo(job_id):
-    global jobs
-    try:
-        job = jobs[job_id]
-        file = job[3]
-        f = io.BytesIO()
-        f.write(file)
-        f.seek(0)
-        mime = fleep.get(file.tobytes()).mime[0]
-        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
-
-    except Exception as e:
-        print_error(e)
-        return render_template('error.html')
-
-
-# edit job
-@app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
-@requires_auth
-def edit_job(job_id):
-    job = db.jobs_get_one(job_id)
-    if request.method == 'POST':
-        form = JobForm()
-        try:
-            name = form.name.data
-            description = form.description.data
-            file = form.file.data.read()
-            if name != job[1]:
-                new_duty = db.jobs_get_by_name(name)
-                if new_duty is not None:
-                    flash('Вакансия с таким именем уже существует', 'add_job')
-                    return render_template('edit_job.html', form=form, job=job)
-                else:
-                    db.jobs_update_info(job_id, 'name', name)
-
-            if description != job[2]:
-                db.jobs_update_info(job_id, 'description', description)
-
-            if file != job[3] and len(file) > 10:
-                db.jobs_update_info(job_id, 'photo', file)
-
-            flash('Должность изменена', 'edit_job_success')
-
-            return render_template('edit_job.html', form=form, job=job)
-        except Exception as e:
-            print_error(e)
-
-        return render_template('edit_job.html', form=form, job=job)
-    else:
-        form = JobForm()
-        form.name.data = job[1]
-        form.description.data = job[2]
-        form.file.data = job[3]
-
-        return render_template('edit_job.html', form=form, job=job)
-
-
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
 
+# roles form
 class RoleForm(FlaskForm):
     name = StringField("Название", validators=[DataRequired()])
     duties = MultiCheckboxField("Обязанности", choices=[(i[0], i[1]) for i in db.duties_get_all()], coerce=int)
@@ -563,6 +471,7 @@ def edit_role(role_id):
         return render_template('edit_role.html', form=form, role=role)
 
 
+# delete role
 @app.route('/delete_role/<int:role_id>', methods=['GET'])
 @requires_auth
 def delete_role(role_id):
@@ -573,6 +482,124 @@ def delete_role(role_id):
     return redirect('/roles_setup')
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# JOBS
+
+# jobs main page
+@app.route('/jobs_setup', methods=['GET'])
+@requires_auth
+def jobs_setup():
+    global jobs
+    all_jobs = db.jobs_get_all()
+    jobs = {i[0]: i for i in all_jobs}
+    return render_template('jobs_setup.html', jobs=all_jobs)
+
+
+# jobs form
+class JobForm(FlaskForm):
+    name = StringField("Название", validators=[DataRequired()])
+    description = TextAreaField("Описание", validators=[DataRequired()])
+    file = FileField("Фото", validators=[DataRequired()])
+    submit = SubmitField("Добавить")
+
+
+# add job
+@app.route('/add_job', methods=['GET', 'POST'])
+@requires_auth
+def add_job():
+    form = JobForm()
+    if request.method == 'POST':
+        try:
+            name = form.name.data
+            description = form.description.data
+            file = form.file.data
+            job = db.jobs_get_by_name(name)
+            if job is not None:
+                flash('Должность с таким именем уже существует', 'add_job')
+                return render_template('add_job.html', form=form)
+
+            else:
+                new_job = (name, description, file.read())
+                db.jobs_add(new_job)
+            return redirect('/jobs_setup')
+        except Exception as e:
+            print_error(e)
+            return render_template('add_job.html', form=form)
+
+    else:
+        return render_template('add_job.html', form=form)
+
+
+# delete job
+@app.route('/delete_jobs/<int:job_id>', methods=['GET'])
+@requires_auth
+def delete_jobs(job_id):
+    db.jobs_delete(job_id)
+    return redirect('/jobs_setup')
+
+
+# get job photo
+@app.route('/job_photo/<int:job_id>', methods=['GET'])
+def job_photo(job_id):
+    global jobs
+    try:
+        job = jobs[job_id]
+        file = job[3]
+        f = io.BytesIO()
+        f.write(file)
+        f.seek(0)
+        mime = fleep.get(file.tobytes()).mime[0]
+        return send_file(f, mimetype=mime, download_name=f'file.{fleep.get(file.tobytes()).extension[0]}')
+
+    except Exception as e:
+        print_error(e)
+        return render_template('error.html')
+
+
+# edit job
+@app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
+@requires_auth
+def edit_job(job_id):
+    job = db.jobs_get_one(job_id)
+    if request.method == 'POST':
+        form = JobForm()
+        try:
+            name = form.name.data
+            description = form.description.data
+            file = form.file.data.read()
+            if name != job[1]:
+                new_duty = db.jobs_get_by_name(name)
+                if new_duty is not None:
+                    flash('Вакансия с таким именем уже существует', 'add_job')
+                    return render_template('edit_job.html', form=form, job=job)
+                else:
+                    db.jobs_update_info(job_id, 'name', name)
+
+            if description != job[2]:
+                db.jobs_update_info(job_id, 'description', description)
+
+            if file != job[3] and len(file) > 10:
+                db.jobs_update_info(job_id, 'photo', file)
+
+            flash('Должность изменена', 'edit_job_success')
+
+            return render_template('edit_job.html', form=form, job=job)
+        except Exception as e:
+            print_error(e)
+
+        return render_template('edit_job.html', form=form, job=job)
+    else:
+        form = JobForm()
+        form.name.data = job[1]
+        form.description.data = job[2]
+        form.file.data = job[3]
+
+        return render_template('edit_job.html', form=form, job=job)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# DUTIES
+
 # setup duties
 @app.route('/duties_setup', methods=['GET'])
 @requires_auth
@@ -580,6 +607,7 @@ def duties_setup():
     return render_template('duties_setup.html', duties=db.duties_get_all())
 
 
+# duties form
 class DutyForm(FlaskForm):
     name = StringField("Название", validators=[DataRequired()])
     about = TextAreaField("Описание", validators=[DataRequired()])
@@ -687,13 +715,11 @@ def delete_duty(duty_id):
     return redirect('/duties_setup')
 
 
-class AccessCodeForm(FlaskForm):
-    role = SelectField("Должности", choices=[(i[0], i[1]) for i in [('', '---')] + db.roles_get_all()],
-                       validators=[DataRequired(), Length(min=1)])
-    one_time = BooleanField('Одноразовый')
-    submit = SubmitField("Добавить")
+# --------------------------------------------------------------------------------------------------------------------
+# ACCESS CODES
 
 
+# access codes main page
 @app.route('/access_codes', methods=['GET', 'POST'])
 @requires_auth
 def access_codes():
@@ -702,13 +728,15 @@ def access_codes():
     return render_template('access_codes.html', codes=db.access_codes_get_all(), form=form, roles=roles)
 
 
-@app.route('/delete_access_code/<int:code_id>', methods=['GET'])
-@requires_auth
-def delete_access_code(code_id):
-    db.access_codes_delete(code_id)
-    return redirect('/access_codes')
+# access codes form
+class AccessCodeForm(FlaskForm):
+    role = SelectField("Должности", choices=[(i[0], i[1]) for i in [('', '---')] + db.roles_get_all()],
+                       validators=[DataRequired(), Length(min=1)])
+    one_time = BooleanField('Одноразовый')
+    submit = SubmitField("Добавить")
 
 
+# add access code
 @app.route('/add_access_code', methods=['POST'])
 @requires_auth
 def add_access_code():
@@ -725,6 +753,106 @@ def add_access_code():
     return redirect('/access_codes')
 
 
+# delete access code
+@app.route('/delete_access_code/<int:code_id>', methods=['GET'])
+@requires_auth
+def delete_access_code(code_id):
+    db.access_codes_delete(code_id)
+    return redirect('/access_codes')
+
+
+# --------------------------------------------------------------------------------------------------------------------
+#  QUESTIONS
+
+# questions main page
+@app.route('/questions_setup', methods=['GET'])
+@requires_auth
+def questions_setup():
+    questions = db.questions_get_all()
+    return render_template('questions_setup.html', questions=questions)
+
+
+# questions form
+class QuestionForm(FlaskForm):
+    question = StringField("Вопрос", validators=[DataRequired()])
+    answer = TextAreaField("Ответ", validators=[DataRequired()])
+    submit = SubmitField("Добавить")
+
+
+# add questions
+@app.route('/add_questions', methods=['GET', 'POST'])
+@requires_auth
+def add_questions():
+    form = QuestionForm()
+    if request.method == 'POST':
+        try:
+            question = form.question.data
+            answer = form.answer.data
+            question_obj = db.questions_get_by_question(question)
+            if question_obj is not None:
+                flash('Такой вопрос уже существует', 'add_questions')
+                return render_template('add_questions.html', form=form)
+
+            else:
+                new_questions = (question, answer)
+                db.questions_add(new_questions)
+            return redirect('/questions_setup')
+        except Exception as e:
+            print_error(e)
+            return render_template('add_questions.html', form=form)
+
+    else:
+        return render_template('add_questions.html', form=form)
+
+
+# delete questions
+@app.route('/delete_questions/<int:questions_id>', methods=['GET'])
+@requires_auth
+def delete_questions(questions_id):
+    db.questions_delete(questions_id)
+    return redirect('/questions_setup')
+
+
+# edit questions
+@app.route('/edit_questions/<int:questions_id>', methods=['GET', 'POST'])
+@requires_auth
+def edit_questions(questions_id):
+    questions_obj = db.questions_get_one(questions_id)
+    if request.method == 'POST':
+        form = QuestionForm()
+        try:
+            question = form.question.data
+            answer = form.answer.data
+            if question != questions_obj[1]:
+                new_question = db.questions_get_by_question(question)
+                if new_question is not None:
+                    flash('Такой вопрос уже существует', 'add_question')
+                    return render_template('edit_questions.html', form=form, question=questions_obj)
+                else:
+                    db.questions_update_info(questions_id, 'question', question)
+
+            if answer != answer[2]:
+                db.questions_update_info(questions_id, 'answer', answer)
+
+            flash('Вопрос изменен', 'edit_questions_success')
+
+            return render_template('edit_questions.html', form=form, question=questions_obj)
+        except Exception as e:
+            print_error(e)
+
+        return render_template('edit_questions.html', form=form, question=questions_obj)
+    else:
+        form = QuestionForm()
+        form.question.data = questions_obj[1]
+        form.answer.data = questions_obj[2]
+
+        return render_template('edit_questions.html', form=form, question=questions_obj)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# LOGS
+
+# logs
 @app.route('/logs', methods=['GET'])
 @requires_auth
 def logs():
@@ -739,6 +867,6 @@ def logs():
 if __name__ == '__main__':
     while True:
         try:
-            app.run(host='0.0.0.0', threaded=True)
+            app.run(host='0.0.0.0', threaded=True, debug=True)
         except Exception as error:
             print_error(error)
