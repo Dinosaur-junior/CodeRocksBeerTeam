@@ -431,7 +431,7 @@ class Bot:
             if message.text == '<< Назад':
                 self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                       reply_markup=cur_keyboard())
-            elif message.text == 'СТАРТ':
+            elif message.text == '▶️ СТАРТ ▶️':
                 self.bot.send_message(chat_id=message.chat.id,
                                       text='Линейка товаров пива компании BeerCoders - это искусство пивоварения, которое сочетает в себе традиционные методы и инновационные технологии. Наша продукция включает в себя широкий ассортимент пива, от классических сортов до экспериментальных новинок, которые удивят даже самых искушенных ценителей пива.\n\nВопрос: Как вы думаете, сколько литров пива наша компания производит за 1 месяц?',
                                       reply_markup=keyboard.cmp_info_game_1())
@@ -470,7 +470,7 @@ class Bot:
             if message.text == '<< Назад':
                 self.bot.send_message(message.from_user.id, 'Главное меню! 🍺🍺🍺',
                                       reply_markup=keyboard.menu_reg())
-            elif message.text == 'Запросить выдачу пива':
+            elif message.text == '🍺 Запросить выдачу пива 🍺':
                 if cur_user[3] == 0:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='У Вас еще нет пива :(',
@@ -487,9 +487,9 @@ class Bot:
                     db.users_update_info(cur_user[0], 'beer_amount', cur_user[3] - 1)
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
-            elif message.text == 'Моя карточка':
+            elif message.text == '🖼 Моя карточка 🖼':
 
-                if cur_user[4]== '' and cur_user[5] is None:
+                if cur_user[4] == '' and cur_user[5] is None:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Ваша карточка не заполнена',
                                                 reply_markup=keyboard.card_setup())

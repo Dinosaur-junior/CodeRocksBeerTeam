@@ -27,7 +27,7 @@ def none():
 
 def menu():
     return create_keyboard([
-        ['Ввести код'],
+        ['🐈 Ввести код 🐈'],
         ['📲 Связаться с админом 📲'],
         ['ℹ️ Посмотреть информацию о компании ℹ️']
     ])
@@ -43,7 +43,7 @@ def menu_reg():
 
 def profile():
     return create_keyboard([
-        ['Запросить выдачу пива', 'Моя карточка'],
+        ['🍺 Запросить выдачу пива 🍺', '🖼 Моя карточка 🖼'],
         ['<< Назад']
     ])
 
@@ -55,7 +55,7 @@ def back():
 
 def start_btn():
     return create_keyboard([
-        ['СТАРТ'],
+        ['▶️ СТАРТ ▶️'],
         ['<< Назад']
     ])
 
@@ -95,14 +95,14 @@ def duties_training_answ(id, answers, max_duties_cnt):
 
 def card_setup():
     return create_inline_keyboard([
-        [('Изменить описание', 'card_setup|about'), ('Изменить фото', 'card_setup|photo')]
+        [('🖊 Изменить описание 🖊', 'card_setup|about'), ('📷 Изменить фото 📷', 'card_setup|photo')]
     ])
 
 
 def cmp_info_game_1():
     return create_inline_keyboard([
         [('1 л', 'cmp_info_game|1|False'), ('100 л', 'cmp_info_game|1|False'), ('40 тонн', 'cmp_info_game|1|True')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
@@ -110,14 +110,14 @@ def cmp_info_game_1_answer():
     return create_inline_keyboard([
         [('❌ 1 л', 'cmp_info_game|1|'), ('❌ 100 л', 'cmp_info_game|1|'), ('✅ 40 тонн', 'cmp_info_game|1|')],
         [('Далее >>', 'cmp_info_game|1|next')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
 def cmp_info_game_2():
     return create_inline_keyboard([
         [('15%', 'cmp_info_game|2|False'), ('40%', 'cmp_info_game|2|False'), ('95%', 'cmp_info_game|2|True')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
@@ -125,7 +125,7 @@ def cmp_info_game_2_answer():
     return create_inline_keyboard([
         [('❌ 15%', 'cmp_info_game|2|'), ('❌ 40%', 'cmp_info_game|2|'), ('✅ 95%', 'cmp_info_game|2|')],
         [('Далее >>', 'cmp_info_game|2|next')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
@@ -133,7 +133,7 @@ def cmp_info_game_3():
     return create_inline_keyboard([
         [('Вишневое пиво', 'cmp_info_game|3|True'), ('Светлое пиво', 'cmp_info_game|3|True'),
          ('Темное пиво', 'cmp_info_game|3|True')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
@@ -141,7 +141,7 @@ def cmp_info_game_3_answer():
     return create_inline_keyboard([
         [('✅ Вишневое пиво', 'cmp_info_game|3|'), ('✅ Светлое пиво', 'cmp_info_game|3|'),
          ('✅ Темное пиво', 'cmp_info_game|3|')],
-        [('Завершить игру', 'cmp_info_game|end')]
+        [('🏁 Завершить игру 🏁', 'cmp_info_game|end')]
     ])
 
 
