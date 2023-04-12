@@ -92,6 +92,7 @@ def duties_training_answ(id, answers, max_duties_cnt):
 
 
 # --------------------------------------------------------------------
+
 def card_setup():
     return create_inline_keyboard([
         [('Изменить описание', 'card_setup|about'), ('Изменить фото', 'card_setup|photo')]
@@ -141,4 +142,19 @@ def cmp_info_game_3_answer():
         [('✅ Вишневое пиво', 'cmp_info_game|3|'), ('✅ Светлое пиво', 'cmp_info_game|3|'),
          ('✅ Темное пиво', 'cmp_info_game|3|')],
         [('Завершить игру', 'cmp_info_game|end')]
+    ])
+
+
+#--------------------------------------------------------------------
+
+def often_questions(questions):
+    return create_inline_keyboard(
+        [[(f'{question.question}', f'often_questions|{question.id}')] for question in questions]
+    )
+
+#--------------------------------------------------------------------
+
+def nav_bar(id, max_user_cnt):
+    return create_inline_keyboard([
+        [('<', f'nav_bar|{id}|back'), (f'{id + 1}/{max_user_cnt}', f'nav_bar|{id}|'), ('>', f'nav_bar|{id}|next')]
     ])
