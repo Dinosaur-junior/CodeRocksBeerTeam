@@ -309,7 +309,6 @@ def dialogs():
 def dialog(user_id):
     try:
         user = db.users_get_one(user_id)
-
         user_info = user[-1]
         user_info['unread'] = 'False'
         db.users_update_info(user_id, 'info', json.dumps(user_info))

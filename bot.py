@@ -248,7 +248,7 @@ class Bot:
                             if db_users[id][5] is not None:
                                 self.bot.send_photo(chat_id=message.chat.id,
                                                     photo=db_users[id][5],
-                                                    caption=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                                    caption=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                     reply_markup=keyboard.nav_bar(
                                                         user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
                                                     parse_mode='HTML')
@@ -256,7 +256,7 @@ class Bot:
                             else:
                                 try:
                                     self.bot.send_message(chat_id=message.chat.id,
-                                                          text=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                                          text=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                           reply_markup=keyboard.nav_bar(
                                                               user_actions[message.chat.id]['nav_bar_id'],
                                                               len(db_users)),
@@ -273,7 +273,7 @@ class Bot:
 
                     elif message.text == '❗️ Мои обязанности':
                         if cur_user.info['training_done']:
-                            duties = db.get_duties_by_role_id(cur_user.role)
+                            duties = db.get_duties_by_role_id(db.users_get_one(message.chat.id)[1])
                             duties = [i[1] for i in duties]
                             duties = '\n'.join(duties)
                             self.bot.send_message(chat_id=message.chat.id,
@@ -291,7 +291,7 @@ class Bot:
                             self.bot.register_next_step_handler(msg, training_again)
                         else:
                             db.users_update_info(message.chat.id, 'status', 'Обучение обязанностям - страница 1')
-                            db_duties = db.get_duties_by_role_id(cur_user.role)
+                            db_duties = db.get_duties_by_role_id(db.users_get_one(message.chat.id)[1])
 
                             self.duties = [Duty(id=db_duty[0],
                                                 name=db_duty[1],
@@ -444,14 +444,12 @@ class Bot:
                 self.bot.register_next_step_handler(msg, start_cmp_info_game)
 
         def training_again(message):
-            cur_user = self.get_user(message.chat.id)
-
             if message.text == '<< Назад':
                 self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
                                       reply_markup=keyboard.menu_reg())
             elif message.text == 'Пройти еще раз':
                 db.users_update_info(message.chat.id, 'status', 'Обучение обязанностям - страница 1')
-                db_duties = db.get_duties_by_role_id(cur_user.role)
+                db_duties = db.get_duties_by_role_id(db.users_get_one(message.chat.id)[1])
                 self.duties = [Duty(id=db_duty[0],
                                     name=db_duty[1],
                                     about=db_duty[2],
@@ -740,12 +738,12 @@ class Bot:
                     if db_users[id][5] is not None:
                         self.bot.send_photo(chat_id=call.message.chat.id,
                                             photo=db_users[id][5],
-                                            caption=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                            caption=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                             reply_markup=keyboard.nav_bar(id, len(db_users)),
                                             parse_mode='HTML')
                     else:
                         self.bot.send_message(chat_id=call.message.chat.id,
-                                              text=f'Описание: {db_users[id][4] if  len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
+                                              text=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                               reply_markup=keyboard.nav_bar(id, len(db_users)),
                                               parse_mode='HTML')
 
