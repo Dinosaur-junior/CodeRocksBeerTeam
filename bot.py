@@ -435,10 +435,10 @@ class Bot:
                     msg = self.bot.send_message(chat_id=message.chat.id,
                                                 text='Ваше пиво:',
                                                 reply_markup=keyboard.profile())
-                    self.bot.send_animation(chat_id=message.chat.id,
-                                            animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
-                    cur_user.beer_amount = 1
-                    db.users_update_info(cur_user.id, 'beer_amount', cur_user.ber_amount)
+                    msg = self.bot.send_animation(chat_id=message.chat.id,
+                                                  animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
+                    cur_user.beer_amount = -1
+                    db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
             elif message.text == 'Моя карточка':
@@ -480,6 +480,31 @@ class Bot:
                                             text='Текст обновлен',
                                             reply_markup=keyboard.profile())
                 self.bot.register_next_step_handler(msg, profile_main_page)
+
+        def edit_profile_photo(message):
+            cur_user = self.get_user(message.chat.id)
+
+            if message.text == '<< Назад':
+                msg = self.bot.send_message(chat_id=message.chat.id,
+                                            text='Ваш профиль:',
+                                            reply_markup=keyboard.profile())
+                self.bot.register_next_step_handler(msg, profile_main_page)
+
+            else:
+                if message.content_type != 'photo':
+                    msg = self.bot.send_message(chat_id=message.chat.id,
+                                                text='Вы отправили не фото')
+                    self.bot.register_next_step_handler(msg, edit_profile_photo)
+                else:
+                    file_id = message.photo[-1].file_id
+                    file_info = self.bot.get_file(file_id)
+                    downloaded_file = self.bot.download_file(file_info.file_path)
+                    cur_user.photo = downloaded_file
+                    db.users_update_info(cur_user.id, 'photo', downloaded_file)
+                    msg = self.bot.send_message(chat_id=message.chat.id,
+                                                text='Фото обновлено',
+                                                reply_markup=keyboard.profile())
+                    self.bot.register_next_step_handler(msg, profile_main_page)
 
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
@@ -599,14 +624,18 @@ class Bot:
                         db.users_update_info(cur_user.id, 'beer_amount', cur_user.beer_amount)
 
                 elif prefix == 'card_setup':
-                    if data == 'text':
+                    self.bot.clear_step_handler_by_chat_id(call.message.chat.id)
+                    if data == 'about':
                         msg = self.bot.send_message(chat_id=call.message.chat.id,
                                                     text='Введите новое описание',
                                                     reply_markup=keyboard.back())
                         self.bot.register_next_step_handler(msg, edit_profile_about)
 
                     elif data == 'photo':
-                        self.bot.send_message(chat_id=call.message.chat.id, text='Раздел находится в разработке')
+                        msg = self.bot.send_message(chat_id=call.message.chat.id,
+                                                    text='Отправьте фото',
+                                                    reply_markup=keyboard.back())
+                        self.bot.register_next_step_handler(msg, edit_profile_photo)
 
 
             except Exception as e:
