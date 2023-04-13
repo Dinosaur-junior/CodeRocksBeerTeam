@@ -157,7 +157,7 @@ def often_questions(questions):
 
 # --------------------------------------------------------------------
 
-def nav_bar(id, max_user_cnt):
+def nav_bar(id, max_user_cnt, user_id):
     return create_inline_keyboard([
-        [('<', f'nav_bar|{id}|back'), (f'{id + 1}/{max_user_cnt}', f'nav_bar|{id}|'), ('>', f'nav_bar|{id}|next')]
+        [('<', f'nav_bar|{id}|back'), (f'{id + 1}/{max_user_cnt}', f'nav_bar|{id}|'), ('>', f'nav_bar|{id}|next')], [(f'Подарить пиво 🍺', f'send_beer|{user_id}')]
     ])

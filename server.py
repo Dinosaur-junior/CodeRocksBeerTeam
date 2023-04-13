@@ -24,6 +24,7 @@ from wtforms import StringField, TextAreaField, SubmitField, SelectMultipleField
 from wtforms.validators import DataRequired, Length
 
 import config
+import keyboard
 from config import path
 from database import Database
 from funcitons import print_error, create_password, get_username
@@ -193,6 +194,13 @@ def dismiss_user(user_id):
     try:
         db.users_update_info(user_id, 'role', None)
         flash(f'Пользователь {user_id} был уволен', 'dismiss_user')
+        bot.clear_step_handler_by_chat_id(user_id)
+        user = db.users_get_one(user_id)
+        info = user[-1]
+        info['training_done'] = ['False']
+        info['unread'] = 'False'
+        db.users_update_info(user_id, 'info', json.dumps(info))
+        bot.send_message(user_id, 'Вы были уволены :(', reply_markup=keyboard.menu())
         return redirect('/users_page')
 
     except Exception as e:

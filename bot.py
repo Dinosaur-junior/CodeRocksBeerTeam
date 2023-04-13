@@ -250,7 +250,8 @@ class Bot:
                                                     photo=db_users[id][5],
                                                     caption=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                     reply_markup=keyboard.nav_bar(
-                                                        user_actions[message.chat.id]['nav_bar_id'], len(db_users)),
+                                                        user_actions[message.chat.id]['nav_bar_id'], len(db_users),
+                                                        db_users[id][0]),
                                                     parse_mode='HTML')
                                 break
                             else:
@@ -259,7 +260,7 @@ class Bot:
                                                           text=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
                                                           reply_markup=keyboard.nav_bar(
                                                               user_actions[message.chat.id]['nav_bar_id'],
-                                                              len(db_users)),
+                                                              len(db_users), db_users[id][0]),
                                                           parse_mode='HTML')
                                     break
                                 except:
@@ -549,6 +550,57 @@ class Bot:
                                                 reply_markup=keyboard.profile())
                     self.bot.register_next_step_handler(msg, profile_main_page)
 
+        def send_beer_amount(message, us):
+
+            if message.text == '<< Назад':
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
+                                      reply_markup=keyboard.menu_reg())
+            else:
+                value = message.text
+                flag = False
+                try:
+                    value = int(value)
+                    flag = True
+                except:
+                    pass
+
+                if flag:
+                    cur_user = db.users_get_one(message.chat.id)
+                    if cur_user[3] < value:
+                        msg = self.bot.send_message(chat_id=message.chat.id,
+                                                    text='У вас нет столько пива',
+                                                    reply_markup=keyboard.back())
+                        self.bot.register_next_step_handler(msg, send_beer_amount, us)
+
+                    else:
+                        msg = self.bot.send_message(chat_id=message.chat.id,
+                                                    text='Введите текст',
+                                                    reply_markup=keyboard.back())
+                        self.bot.register_next_step_handler(msg, send_beer_text, us, value)
+
+                else:
+                    msg = self.bot.send_message(chat_id=message.chat.id,
+                                                text='Вы ввели не число',
+                                                reply_markup=keyboard.back())
+                    self.bot.register_next_step_handler(msg, send_beer_amount, us)
+
+        def send_beer_text(message, us, beer_amount):
+
+            if message.text == '<< Назад':
+                self.bot.send_message(message.from_user.id, 'Главное меню! 🍺',
+                                      reply_markup=keyboard.menu_reg())
+            else:
+                value = message.text
+                user = db.users_get_one(us[0])
+                cur_user = db.users_get_one(message.chat.id)
+                db.users_update_info(cur_user[0], 'beer_amount', cur_user[3] - beer_amount)
+                db.users_update_info(user[0], 'beer_amount', user[3] + beer_amount)
+                self.bot.send_message(chat_id=user[0], text=f"Вам подарили {beer_amount} шт. пива!\n\n{value}")
+                self.bot.send_animation(chat_id=user[0],
+                                        animation=open(os.path.join(path, 'static', 'beer.gif'), 'rb'))
+                self.bot.send_message(message.from_user.id, 'Пиво отправлено 🍺',
+                                      reply_markup=keyboard.menu_reg())
+
         # ---------------------------------------------------------------------------------------------------------------------
         # Inline buttons
 
@@ -739,13 +791,24 @@ class Bot:
                         self.bot.send_photo(chat_id=call.message.chat.id,
                                             photo=db_users[id][5],
                                             caption=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                            reply_markup=keyboard.nav_bar(id, len(db_users)),
+                                            reply_markup=keyboard.nav_bar(id, len(db_users), db_users[id][0]),
                                             parse_mode='HTML')
                     else:
                         self.bot.send_message(chat_id=call.message.chat.id,
                                               text=f'Описание: {db_users[id][4] if len(db_users[id][4]) > 0 else "тут пока пусто :("}\nДолжность: {role}\n{get_name(db_users[id][-1])}',
-                                              reply_markup=keyboard.nav_bar(id, len(db_users)),
+                                              reply_markup=keyboard.nav_bar(id, len(db_users), db_users[id][0]),
                                               parse_mode='HTML')
+
+                elif prefix == 'send_beer':
+                    user_id = int(data)
+                    user = db.users_get_one(user_id)
+                    self.bot.clear_step_handler_by_chat_id(call.message.chat.id)
+                    msg = self.bot.send_message(chat_id=call.message.chat.id,
+                                                text='Введите кол-во пива, которое хотите подарить',
+                                                reply_markup=keyboard.back())
+                    self.bot.register_next_step_handler(msg, send_beer_amount, user)
+
+
 
             except Exception as e:
                 print_error(e)
